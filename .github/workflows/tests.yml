@@ -34,6 +34,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: 'my-app/package-lock.json'
 
       - name: Install Node Dependencies
         run: npm ci
