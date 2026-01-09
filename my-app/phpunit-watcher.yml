@@ -1,0 +1,15 @@
+watch:
+  directories:
+    - app
+    - tests
+  fileMask: '*.php'
+  exclude:
+    - vendor
+    - node_modules
+notifications:
+  passingTests: false
+  failingTests: false
+phpunit:
+  binaryPath: vendor/bin/pest
+  arguments: --colors=always
+  timeout: 180

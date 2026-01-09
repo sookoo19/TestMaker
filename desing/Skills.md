@@ -16,3 +16,5 @@
 - ホスティング：Vercel（Laravel + React モノリシック構成）
 - DB：Supabase（PostgreSQL）
 - ストレージ：Supabase Storage
+
+- PHPUnit Watcher
