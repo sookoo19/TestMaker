@@ -17,6 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::resource('tests', TestController::class);
+Route::middleware(['auth', 'verified'])->resource('tests', TestController::class);
 
 require __DIR__.'/settings.php';

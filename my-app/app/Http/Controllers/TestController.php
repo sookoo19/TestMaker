@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTestRequest;
 use App\Http\Requests\UpdateTestRequest;
+use App\Http\Resources\TestResource;
 use App\Models\Test;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class TestController extends Controller
         $user = Auth::user();
 
         return Inertia::render('Tests/Index', [
-            'tests' => $user->tests()->latest()->get(),
+            'tests' => TestResource::collection($user->tests()->latest()->get()),
         ]);
     }
 
@@ -49,7 +50,7 @@ class TestController extends Controller
     public function show(Test $test)
     {
         return Inertia::render('Tests/Show', [
-            'test' => $test,
+            'test' => new TestResource($test),
         ]);
     }
 
@@ -59,7 +60,7 @@ class TestController extends Controller
     public function edit(Test $test)
     {
         return Inertia::render('Tests/Edit', [
-            'test' => $test,
+            'test' => new TestResource($test),
         ]);
     }
 
