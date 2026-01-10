@@ -12,7 +12,8 @@ class TestPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // ログインしていれば自分のテスト一覧は見れる
+        return true;
     }
 
     /**
@@ -20,7 +21,8 @@ class TestPolicy
      */
     public function view(User $user, Test $test): bool
     {
-        return false;
+        // 自分のテストのみ閲覧可能
+        return $user->id === $test->user_id;
     }
 
     /**
@@ -28,7 +30,8 @@ class TestPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // ログインしていれば作成可能
+        return true;
     }
 
     /**
@@ -36,7 +39,8 @@ class TestPolicy
      */
     public function update(User $user, Test $test): bool
     {
-        return false;
+        // 自分のテストのみ更新可能
+        return $user->id === $test->user_id;
     }
 
     /**
@@ -44,22 +48,7 @@ class TestPolicy
      */
     public function delete(User $user, Test $test): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Test $test): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Test $test): bool
-    {
-        return false;
+        // 自分のテストのみ削除可能
+        return $user->id === $test->user_id;
     }
 }

@@ -11,7 +11,7 @@ class StoreTestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class StoreTestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => ['required', 'string', 'max:50'],
+            'description' => ['nullable', 'string'],
+            'subject' => ['nullable', 'string', 'max:25'],
+            'difficulty' => ['required', 'in:easy,medium,hard'],
+            'status' => ['required', 'in:draft,generating,completed,failed'],
+            'output_language' => ['required', 'string', 'max:25'],
         ];
     }
 }

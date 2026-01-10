@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreTestRequest;
 use App\Http\Requests\UpdateTestRequest;
 use App\Http\Resources\TestResource;
 use App\Models\Test;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class TestController extends Controller
@@ -14,13 +14,12 @@ class TestController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $tests = $request->user()->tests()->latest()->get();
 
         return Inertia::render('Tests/Index', [
-            'tests' => TestResource::collection($user->tests()->latest()->get()),
+            'tests' => TestResource::collection($tests),
         ]);
     }
 
@@ -37,9 +36,7 @@ class TestController extends Controller
      */
     public function store(StoreTestRequest $request)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $test = $user->tests()->create($request->validated());
+        $test = $request->user()->tests()->create($request->validated());
 
         return redirect()->route('tests.show', $test);
     }
@@ -47,8 +44,13 @@ class TestController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Test $test)
+    public function show(Request $request, Test $test)
     {
+        abort_if(
+            $request->user()->cannot('view', $test), // この箇所testpolicy
+            404
+        );
+
         return Inertia::render('Tests/Show', [
             'test' => new TestResource($test),
         ]);
@@ -69,6 +71,10 @@ class TestController extends Controller
      */
     public function update(UpdateTestRequest $request, Test $test)
     {
+        abort_if(
+            $request->user()->cannot('update', $test), // この箇所testpolicy
+            404
+        );
         $test->update($request->validated());
 
         return redirect()->route('tests.show', $test);
@@ -77,8 +83,12 @@ class TestController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Test $test)
+    public function destroy(Request $request, Test $test)
     {
+        abort_if(
+            $request->user()->cannot('delete', $test), // この箇所testpolicy
+            404
+        );
         $test->delete();
 
         return redirect()->route('tests.index');
