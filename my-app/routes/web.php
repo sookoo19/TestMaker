@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -18,5 +19,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->resource('tests', TestController::class);
+Route::middleware(['auth', 'verified'])->resource('questions', QuestionController::class);
 
 require __DIR__.'/settings.php';
