@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;

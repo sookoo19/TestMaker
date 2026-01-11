@@ -1,7 +1,8 @@
 <?php
+
+use App\Models\Question;
 use App\Models\Test;
 use App\Models\User;
-use App\Models\Question;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -29,6 +30,6 @@ describe('destroy', function () {
         $response = $this->actingAs($this->user)->delete(route('questions.destroy', $question));
 
         $response->assertRedirect(route('tests.show', $this->test));
-        $this->assertDatabaseMissing('questions', ['id' => $question->id]); //指定したデータが存在しないことを確認する。
+        $this->assertDatabaseMissing('questions', ['id' => $question->id]); // 指定したデータが存在しないことを確認する。
     });
 });

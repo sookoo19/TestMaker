@@ -19,7 +19,7 @@ class QuestionFactory extends Factory
     {
         return [
             'question_type' => fake()->randomElement(['descriptive', 'choice', 'fill_blank', 'ordering']),
-            'question_text' => fake()->sentence() . '?',
+            'question_text' => fake()->sentence().'?',
             'correct_answer' => fake()->sentence(),
             'explanation' => fake()->optional()->paragraph(),
             'difficulty' => fake()->randomElement(['easy', 'medium', 'hard']),
