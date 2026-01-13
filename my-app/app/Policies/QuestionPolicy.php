@@ -12,7 +12,8 @@ class QuestionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // ログインしていれば自分の問題一覧は見れる
+        return true;
     }
 
     /**
@@ -20,7 +21,8 @@ class QuestionPolicy
      */
     public function view(User $user, Question $question): bool
     {
-        return false;
+        // 親のテストの所有者のみ閲覧可能
+        return $user->id === $question->test->user_id;
     }
 
     /**
@@ -28,7 +30,8 @@ class QuestionPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // ログインしていれば作成可能（親テストの所有者チェックはコントローラーで行う）
+        return true;
     }
 
     /**
@@ -36,7 +39,8 @@ class QuestionPolicy
      */
     public function update(User $user, Question $question): bool
     {
-        return false;
+        // 親のテストの所有者のみ更新可能
+        return $user->id === $question->test->user_id;
     }
 
     /**
@@ -44,7 +48,8 @@ class QuestionPolicy
      */
     public function delete(User $user, Question $question): bool
     {
-        return false;
+        // 親のテストの所有者のみ削除可能
+        return $user->id === $question->test->user_id;
     }
 
     /**
@@ -52,7 +57,8 @@ class QuestionPolicy
      */
     public function restore(User $user, Question $question): bool
     {
-        return false;
+        // 親のテストの所有者のみ復元可能
+        return $user->id === $question->test->user_id;
     }
 
     /**
@@ -60,6 +66,7 @@ class QuestionPolicy
      */
     public function forceDelete(User $user, Question $question): bool
     {
-        return false;
+        // 親のテストの所有者のみ完全削除可能
+        return $user->id === $question->test->user_id;
     }
 }

@@ -11,7 +11,7 @@ class StoreQuestionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class StoreQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'question_type' => ['required', 'in:descriptive,choice,fill_blank,ordering'], // スペースを削除
+            'question_text' => ['required', 'string'],
+            'correct_answer' => ['required', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'difficulty' => ['required', 'in:easy,medium,hard'],
+            'sort_order' => ['required', 'integer'],
         ];
     }
 }

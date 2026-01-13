@@ -16,9 +16,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-});
 
-Route::middleware(['auth', 'verified'])->resource('tests', TestController::class);
-Route::middleware(['auth', 'verified'])->resource('questions', QuestionController::class);
+    Route::resource('tests', TestController::class);
+
+    // ネストしたルート
+    Route::resource('tests.questions', QuestionController::class)->shallow();
+});
 
 require __DIR__.'/settings.php';
