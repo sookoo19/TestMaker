@@ -25,4 +25,9 @@ class Question extends Model
         // belongsTo = 所属
         return $this->belongsTo(Test::class);
     }
+
+    public function question_choices(): HasMany
+    {
+        return $this->hasMany(QuestionChoice::class);
+    }
 }
