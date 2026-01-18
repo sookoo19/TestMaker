@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\QuestionChoice;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class QuestionChoicePolicy
 {

@@ -17,7 +17,6 @@ class QuestionChoice extends Model
         'sort_order',
     ];
 
-
     public function question(): BelongsTo
     {
         // belongsTo = 所属
