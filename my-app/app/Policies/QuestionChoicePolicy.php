@@ -20,7 +20,7 @@ class QuestionChoicePolicy
      */
     public function view(User $user, QuestionChoice $questionChoice): bool
     {
-        return false;
+        return $user->id === $questionChoice->question->test->user_id;
     }
 
     /**
@@ -28,7 +28,7 @@ class QuestionChoicePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -36,7 +36,7 @@ class QuestionChoicePolicy
      */
     public function update(User $user, QuestionChoice $questionChoice): bool
     {
-        return false;
+        return $user->id === $questionChoice->question->test->user_id;
     }
 
     /**
@@ -44,7 +44,7 @@ class QuestionChoicePolicy
      */
     public function delete(User $user, QuestionChoice $questionChoice): bool
     {
-        return false;
+        return $user->id === $questionChoice->question->test->user_id;
     }
 
     /**

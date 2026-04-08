@@ -1,4 +1,39 @@
 {
-    "snyk.advanced.organization": "d42064fc-4cec-4f96-8b44-8a3e8e9b6685",
-    "snyk.advanced.autoSelectOrganization": true
+  "snyk.advanced.organization": "d42064fc-4cec-4f96-8b44-8a3e8e9b6685",
+  "snyk.advanced.autoSelectOrganization": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint",
+    "editor.formatOnSave": true
+  },
+
+  // VS Code内蔵のJS/TSフォーマッタが `"` に戻すことがあるので無効化
+  "typescript.format.enable": false,
+  "javascript.format.enable": false,
+
+  // 保存時のESLint自動修正は走らせない（Prettierだけで整形）
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // 子プロジェクトの設定を確実に参照
+  "prettier.configPath": "./my-app/prettier.config.js",
+  "prettier.prettierPath": "./my-app/node_modules/prettier",
+
+  "typescript.tsdk": "my-app/node_modules/typescript/lib",
+
+  "eslint.format.enable": false,
+
+  "prettier.enableDebugLogs": true,
+
+  "eslint.workingDirectories": [
+    {
+      "directory": "my-app",
+      "changeProcessCWD": true
+    }
+  ]
 }

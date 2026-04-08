@@ -11,7 +11,7 @@ class StoreQuestionChoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreQuestionChoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'choice_text' => ['required', 'string', 'max:255'],
+            'is_correct' => ['required', 'boolean'],
+            'sort_order' => ['required', 'integer', 'min:0'],
         ];
     }
 }
