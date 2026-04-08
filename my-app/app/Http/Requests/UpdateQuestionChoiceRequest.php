@@ -11,7 +11,7 @@ class UpdateQuestionChoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class UpdateQuestionChoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'choice_text' => ['sometimes', 'string', 'max:255'],
+            'is_correct' => ['sometimes', 'boolean'],
+            'sort_order' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 }

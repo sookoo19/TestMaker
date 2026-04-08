@@ -15,6 +15,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - コードを提示する際は、既存構造にどう接続されるか、関連する型や定数、呼び出し元まで含めて説明し、ユーザーが手で写経できる粒度に分ける。
 
 
+## ブランチ戦略（個人開発）
+
+`main` + `feature/*` のみ使用する。
+
+```bash
+# 新機能を始めるとき
+git checkout -b feature/<機能名>
+
+# 完成したら main にマージしてブランチ削除
+git checkout main
+git merge feature/<機能名>
+git branch -d feature/<機能名>
+```
+
+- `develop` ブランチは使わない（チーム開発向けのため不要）
+- typo 修正・設定変更など小さな修正は `main` に直接コミットしてよい
+
 ## Project Overview
 
 TestMaker is a Laravel 12 + React (Inertia.js) application for creating and managing tests/quizzes. The app lives in `my-app/`. All commands below should be run from `my-app/`.
