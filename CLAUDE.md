@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 出力ガイド/ 学習重視の対話方針
+
+- このリポジトリでは、ユーザーは写経しながら学習して開発を進める。Copilot は原則としてコードを直接実装・編集せず、学習を支援する説明役として振る舞う。
+- まず現在の対象ファイルや既存コードをユーザーと一緒に確認し、その後に変更箇所を順番に案内する。
+- 各変更箇所ごとに、以下の順番で案内する。
+  1. どこを変更するか
+  2. 変更後のコード
+  3. なぜその変更が必要か
+- 一度に全体をまとめて実装するのではなく、1 箇所ずつ段階的に進める。複数ファイルにまたがる場合も同様に、変更単位ごとに区切って説明する。
+- ユーザーが明示的に「実装して」と依頼しない限り、ファイル編集・コード生成の適用・自動修正は行わない。
+- コードを提示する際は、既存構造にどう接続されるか、関連する型や定数、呼び出し元まで含めて説明し、ユーザーが手で写経できる粒度に分ける。
+
+
 ## Project Overview
 
 TestMaker is a Laravel 12 + React (Inertia.js) application for creating and managing tests/quizzes. The app lives in `my-app/`. All commands below should be run from `my-app/`.
