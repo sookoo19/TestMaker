@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\QuestionChoiceController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ネストしたルート
     Route::resource('tests.questions', QuestionController::class)->shallow();
+
+    /*
+    Laravelの ->shallow() が自動でルートを2種類に分けてくれる:
+    - index / store / create → 親ID付き
+    URL（questions/{question}/question_choices）
+    - show / edit / update / destroy → 子単体
+    URL（question_choices/{question_choice}）
+    */
+    Route::resource('questions.question_choices',
+        QuestionChoiceController::class)->shallow();
 });
 
 require __DIR__.'/settings.php';
