@@ -15,13 +15,16 @@ return new class extends Migration
         Schema::create('question_choices', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('choice_text');
+            $table->boolean('is_correct')->default(false);
+            $table->unsignedInteger('sort_order')->default(0);
 
             $table->foreignIdFor(Question::class)
                 // 外部キーには必ずインデックスを付与
                 ->index()
                 // 外部キー制約を定義
                 ->constrained()
-                // 親が（所属元User）が削除されたら子（所有するTodo）を自動的に削除
+                // 親の Question が削除されたら紐づく QuestionChoice を自動的に削除
                 ->cascadeOnDelete();
         });
     }

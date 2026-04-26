@@ -213,6 +213,102 @@ public function create(User $user): bool
 
 ## 次回への課題・疑問点
 
-- [ ] `QuestionChoicePolicy::create` の修正を実装する
-- [ ] `UpdateQuestionChoiceRequest` の実装（update 用バリデーション）
+- [x] `QuestionChoicePolicy::create` の修正を実装する
+- [x] `UpdateQuestionChoiceRequest` の実装（update 用バリデーション）
 - [ ] `QuestionChoiceController` の各メソッド実装（`store`, `show`, `update`, `destroy`）
+
+---
+
+# ブランチ戦略・UpdateQuestionChoiceRequest・QuestionChoiceController 着手（追記）
+
+**日付**: 2026-04-08
+**会話の概要**: 個人開発向けのブランチ戦略を決め CLAUDE.md に記録した。UpdateQuestionChoiceRequest を実装し、feature ブランチを切って QuestionChoiceController の実装に着手した。
+
+---
+
+## 今日学んだ概念
+
+### 個人開発のブランチ戦略（main + feature/*）
+- **何か**: `main` ブランチと `feature/<機能名>` ブランチだけを使うシンプルな運用
+- **なぜ必要か**: チーム開発向けの `develop` ブランチは個人開発では不要な複雑さを生む
+- **例え**: 本棚（main）と一時作業台（feature）だけあれば十分。複数の棚を管理する必要はない
+
+### `required` vs `sometimes`（バリデーションルール）
+- **何か**: `required` は必須、`sometimes` は「送られてきた場合のみ検証」するルール
+- **なぜ必要か**: Update（更新）では全フィールドを送らない部分更新を許可したいため
+- **例え**: `required` = 「必ずこの書類を出してください」、`sometimes` = 「出してくれたら確認します（なくてもOK）」
+
+### CLAUDE.md をプロジェクトの設計メモとして使う
+- **何か**: Claude Code が毎回参照するファイル。プロジェクトルールや開発方針を書いておける
+- **なぜ必要か**: 会話をまたいでも一貫したルールで開発できる。毎回説明し直す手間が省ける
+- **例え**: チームの README のような存在。新しい会話を始めても「このプロジェクトのルール」を忘れない
+
+---
+
+## 書いたコード
+
+### UpdateQuestionChoiceRequest — `sometimes` を使った部分更新バリデーション
+
+```php
+// app/Http/Requests/UpdateQuestionChoiceRequest.php
+
+public function authorize(): bool
+{
+    return true; // 認証済みユーザーなら通す。Policy に認可を任せる
+}
+
+public function rules(): array
+{
+    return [
+        'choice_text' => ['sometimes', 'string', 'max:255'],
+        'is_correct'  => ['sometimes', 'boolean'],
+        'sort_order'  => ['sometimes', 'integer', 'min:0'],
+    ];
+}
+```
+
+**ポイント解説:**
+- `sometimes`: そのキーがリクエストに含まれる場合のみ後続ルールを適用する
+- Store との違いは `required` → `sometimes` のみ。型・長さ・範囲のルールは同じ
+- `authorize()` を `true` にする理由は Store と同じ（Policy に委譲）
+
+### CLAUDE.md — ブランチ戦略の追記
+
+```markdown
+## ブランチ戦略（個人開発）
+
+`main` + `feature/*` のみ使用する。
+
+- typo 修正・設定変更など小さな修正は `main` に直接コミットしてよい
+- まとまった機能実装は `feature/<機能名>` ブランチで作業し、完成後に main へマージ
+```
+
+### QuestionChoiceController — use 文の追加（着手）
+
+```php
+use App\Http\Requests\StoreQuestionChoiceRequest;
+use App\Http\Requests\UpdateQuestionChoiceRequest;
+use App\Models\Question;
+use App\Models\QuestionChoice;
+use Illuminate\Http\Request;
+```
+
+**ポイント解説:**
+- `Question`: 親リソース。`store` で「この Question に紐づく Choice を作る」ために必要
+- `Request`: `$request->user()` でログインユーザーを取得し、所有者チェックに使う
+
+---
+
+## なぜそう書くか（設計の理由）
+
+- **Store に `required`、Update に `sometimes` を使う理由**: REST の慣習として、POST（作成）は全フィールド必須、PATCH（部分更新）は変更したいフィールドだけ送れる設計にする。`sometimes` はこのPATCH的な部分更新を実現するためのルール。
+
+- **feature ブランチを切るタイミング**: 1ファイルの小さな修正（UpdateRequest など）は main 直コミットでOK。Controller のように複数ファイル・複数コミットにわたる機能実装は feature ブランチで管理する。
+
+---
+
+## 次回への課題・疑問点
+
+- [ ] `QuestionChoiceController` の各メソッド実装（`store`, `show`, `update`, `destroy`）
+- [ ] Controller 実装後のルーティング追加（`routes/web.php`）
+- [ ] `sometimes` と `nullable` の違いを理解する（どちらも「なくてもいい」に見えるが何が違うか）

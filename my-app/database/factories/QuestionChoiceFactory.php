@@ -17,7 +17,9 @@ class QuestionChoiceFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'choice_text' => $this->faker->sentence(),
+            'is_correct' => false,
+            'sort_order' => $this->faker->numberBetween(0, 10),
         ];
     }
 }
