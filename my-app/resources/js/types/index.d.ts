@@ -41,3 +41,15 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Test {
+    id: number;
+    title: string;
+    description: string | null;
+    subject: string | null;
+    difficulty: string | null;
+    status: string;
+    output_language: string | null;
+    created_at: string;
+    updated_at: string;
+}
