@@ -53,3 +53,15 @@ export interface Test {
     created_at: string;
     updated_at: string;
 }
+
+export interface Question {
+    id: number;
+    question_type: string;
+    question_text: string;
+    correct_answer: string;
+    explanation: string | null;
+    difficulty: string | null;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+}

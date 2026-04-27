@@ -13,77 +13,77 @@ import AuthLayout from '@/layouts/auth-layout';
 export default function Register() {
     return (
         <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
+            title='Create an account'
+            description='Enter your details below to create your account'
         >
-            <Head title="Register" />
+            <Head title='Register' />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
-                className="flex flex-col gap-6"
+                className='flex flex-col gap-6'
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                        <div className='grid gap-6'>
+                            <div className='grid gap-2'>
+                                <Label htmlFor='name'>Name</Label>
                                 <Input
-                                    id="name"
-                                    type="text"
+                                    id='name'
+                                    type='text'
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
+                                    autoComplete='name'
+                                    name='name'
+                                    placeholder='Full name'
                                 />
                                 <InputError
                                     message={errors.name}
-                                    className="mt-2"
+                                    className='mt-2'
                                 />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                            <div className='grid gap-2'>
+                                <Label htmlFor='email'>Email address</Label>
                                 <Input
-                                    id="email"
-                                    type="email"
+                                    id='email'
+                                    type='email'
                                     required
                                     tabIndex={2}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="email@example.com"
+                                    autoComplete='email'
+                                    name='email'
+                                    placeholder='email@example.com'
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                            <div className='grid gap-2'>
+                                <Label htmlFor='password'>Password</Label>
                                 <Input
-                                    id="password"
-                                    type="password"
+                                    id='password'
+                                    type='password'
                                     required
                                     tabIndex={3}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Password"
+                                    autoComplete='new-password'
+                                    name='password'
+                                    placeholder='Password'
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
+                            <div className='grid gap-2'>
+                                <Label htmlFor='password_confirmation'>
                                     Confirm password
                                 </Label>
                                 <Input
-                                    id="password_confirmation"
-                                    type="password"
+                                    id='password_confirmation'
+                                    type='password'
                                     required
                                     tabIndex={4}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    autoComplete='new-password'
+                                    name='password_confirmation'
+                                    placeholder='Confirm password'
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -91,17 +91,17 @@ export default function Register() {
                             </div>
 
                             <Button
-                                type="submit"
-                                className="mt-2 w-full"
+                                type='submit'
+                                className='mt-2 w-full'
                                 tabIndex={5}
-                                data-test="register-user-button"
+                                data-test='register-user-button'
                             >
                                 {processing && <Spinner />}
                                 Create account
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className='text-center text-sm text-muted-foreground'>
                             Already have an account?{' '}
                             <TextLink href={login()} tabIndex={6}>
                                 Log in

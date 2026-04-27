@@ -34,7 +34,7 @@ class UpdateTestRequest extends FormRequest
             'subject' => ['sometimes', 'nullable', 'string', 'max:25'],
             'difficulty' => ['sometimes', 'required', 'in:easy,medium,hard'],
             'status' => ['sometimes', 'required', 'in:draft,generating,completed,failed'],
-            'output_language' => ['sometimes', 'required', 'string', 'max:25'],
+            'output_language' => ['sometimes', 'required', 'in:ja,en'],
         ];
     }
 }
