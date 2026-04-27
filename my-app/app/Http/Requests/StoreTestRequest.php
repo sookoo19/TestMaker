@@ -27,7 +27,7 @@ class StoreTestRequest extends FormRequest
             'subject' => ['nullable', 'string', 'max:25'],
             'difficulty' => ['required', 'in:easy,medium,hard'],
             'status' => ['required', 'in:draft,generating,completed,failed'],
-            'output_language' => ['required', 'string', 'max:25'],
+            'output_language' => ['required', 'in:ja,en'],
         ];
     }
 }
