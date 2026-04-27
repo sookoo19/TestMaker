@@ -28,6 +28,7 @@ class TestResource extends JsonResource
             ],
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'questions' => QuestionResource::collection($this->whenLoaded('questions')),
         ];
     }
 }

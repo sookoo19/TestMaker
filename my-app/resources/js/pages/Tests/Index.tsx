@@ -12,9 +12,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    tests: {
-        data: Test[];
-    };
+    tests: Test[];
 }
 
 export default function Index({ tests }: Props) {
@@ -32,7 +30,7 @@ export default function Index({ tests }: Props) {
                     </Link>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {tests.data.map((test) => (
+                    {tests.map((test) => (
                         <Link key={test.id} href={show(test).url}>
                             <Card className="transition-colors hover:bg-muted/50">
                                 <CardHeader className="pb-2">
@@ -58,7 +56,7 @@ export default function Index({ tests }: Props) {
                         </Link>
                     ))}
                 </div>
-                {tests.data.length === 0 && (
+                {tests.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                         テストがまだありません。「テスト作成」から作成してください。
                     </p>
