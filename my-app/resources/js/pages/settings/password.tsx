@@ -26,13 +26,13 @@ export default function Password() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Password settings" />
+            <Head title='Password settings' />
 
             <SettingsLayout>
-                <div className="space-y-6">
+                <div className='space-y-6'>
                     <HeadingSmall
-                        title="Update password"
-                        description="Ensure your account is using a long, random password to stay secure"
+                        title='Update password'
+                        description='Ensure your account is using a long, random password to stay secure'
                     />
 
                     <Form
@@ -55,23 +55,23 @@ export default function Password() {
                                 currentPasswordInput.current?.focus();
                             }
                         }}
-                        className="space-y-6"
+                        className='space-y-6'
                     >
                         {({ errors, processing, recentlySuccessful }) => (
                             <>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="current_password">
+                                <div className='grid gap-2'>
+                                    <Label htmlFor='current_password'>
                                         Current password
                                     </Label>
 
                                     <Input
-                                        id="current_password"
+                                        id='current_password'
                                         ref={currentPasswordInput}
-                                        name="current_password"
-                                        type="password"
-                                        className="mt-1 block w-full"
-                                        autoComplete="current-password"
-                                        placeholder="Current password"
+                                        name='current_password'
+                                        type='password'
+                                        className='mt-1 block w-full'
+                                        autoComplete='current-password'
+                                        placeholder='Current password'
                                     />
 
                                     <InputError
@@ -79,36 +79,36 @@ export default function Password() {
                                     />
                                 </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="password">
+                                <div className='grid gap-2'>
+                                    <Label htmlFor='password'>
                                         New password
                                     </Label>
 
                                     <Input
-                                        id="password"
+                                        id='password'
                                         ref={passwordInput}
-                                        name="password"
-                                        type="password"
-                                        className="mt-1 block w-full"
-                                        autoComplete="new-password"
-                                        placeholder="New password"
+                                        name='password'
+                                        type='password'
+                                        className='mt-1 block w-full'
+                                        autoComplete='new-password'
+                                        placeholder='New password'
                                     />
 
                                     <InputError message={errors.password} />
                                 </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="password_confirmation">
+                                <div className='grid gap-2'>
+                                    <Label htmlFor='password_confirmation'>
                                         Confirm password
                                     </Label>
 
                                     <Input
-                                        id="password_confirmation"
-                                        name="password_confirmation"
-                                        type="password"
-                                        className="mt-1 block w-full"
-                                        autoComplete="new-password"
-                                        placeholder="Confirm password"
+                                        id='password_confirmation'
+                                        name='password_confirmation'
+                                        type='password'
+                                        className='mt-1 block w-full'
+                                        autoComplete='new-password'
+                                        placeholder='Confirm password'
                                     />
 
                                     <InputError
@@ -116,22 +116,22 @@ export default function Password() {
                                     />
                                 </div>
 
-                                <div className="flex items-center gap-4">
+                                <div className='flex items-center gap-4'>
                                     <Button
                                         disabled={processing}
-                                        data-test="update-password-button"
+                                        data-test='update-password-button'
                                     >
                                         Save password
                                     </Button>
 
                                     <Transition
                                         show={recentlySuccessful}
-                                        enter="transition ease-in-out"
-                                        enterFrom="opacity-0"
-                                        leave="transition ease-in-out"
-                                        leaveTo="opacity-0"
+                                        enter='transition ease-in-out'
+                                        enterFrom='opacity-0'
+                                        leave='transition ease-in-out'
+                                        leaveTo='opacity-0'
                                     >
-                                        <p className="text-sm text-neutral-600">
+                                        <p className='text-sm text-neutral-600'>
                                             Saved
                                         </p>
                                     </Transition>
