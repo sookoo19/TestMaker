@@ -257,5 +257,128 @@ public function definition(): array
 
 - [x] `index` / `show` / `update` / `destroy` の実装
 - [x] ルート登録（shallow nested resource の書き方）
-- [ ] `QuestionChoiceControllerTest` の `store` 以降のテスト作成
+- [x] `QuestionChoiceControllerTest` の全テスト作成（show/update/destroy 追加完了）
 - [ ] `StoreQuestionChoiceRequest::authorize()` の中身（現在 `return true` のまま）を Policy と連携させるか検討
+- [ ] フロントエンドページ作成（Tests/Index から）
+
+---
+
+## 追記: 2026-04-27 — show/update/destroy テスト
+
+**会話の概要**: `QuestionChoiceControllerTest` の残り3アクション（show/update/destroy）のテストを追加した。
+
+---
+
+### show テスト
+
+```php
+describe('show', function () {
+    test('ログインユーザーは選択肢を取得できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->get(
+            route('question_choices.show', $choice)
+        );
+
+        $response->assertOk();
+    });
+
+    test('未認証ユーザーはログインページにリダイレクトされる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->get(route('question_choices.show', $choice));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('他人の選択肢は取得できない', function () {
+        $otherUser = User::factory()->create();
+        $otherTest = Test::factory()->create(['user_id' => $otherUser->id]);
+        $otherQuestion = Question::factory()->create(['test_id' => $otherTest->id]);
+        $otherChoice = QuestionChoice::factory()->create(['question_id' => $otherQuestion->id]);
+
+        $response = $this->actingAs($this->user)->get(
+            route('question_choices.show', $otherChoice)
+        );
+
+        $response->assertNotFound();
+    });
+});
+```
+
+**ポイント:**
+- `show` は shallow ルート → ルート名は `question_choices.show`（`questions.question_choices.show` ではない）
+- 他人チェックは `QuestionChoicePolicy` が `QuestionChoice → question → test → user_id` をたどって判定
+
+---
+
+### update テスト
+
+```php
+describe('update', function () {
+    test('ログインユーザーは選択肢を更新できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->put(
+            route('question_choices.update', $choice),
+            [
+                'choice_text' => '更新後テキスト',
+                'is_correct' => false,
+                'sort_order' => 1,
+            ]
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('question_choices', [
+            'id' => $choice->id,
+            'choice_text' => '更新後テキスト',
+        ]);
+    });
+
+    // 未認証・他人ケースは show と同じ構造
+});
+```
+
+**ポイント:**
+- `assertRedirect()` + `assertDatabaseHas` の2段検証 → 「リダイレクトされた AND DB が更新された」を両方確認
+- `store` の正常ケースと対になるパターン
+
+---
+
+### destroy テスト
+
+```php
+describe('destroy', function () {
+    test('ログインユーザーは選択肢を削除できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->delete(
+            route('question_choices.destroy', $choice)
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('question_choices', ['id' => $choice->id]);
+    });
+
+    // 未認証・他人ケースは show と同じ構造
+});
+```
+
+**ポイント:**
+- `assertDatabaseMissing` → 削除後にレコードが存在しないことを確認。`assertDatabaseHas` の逆
+- `assertRedirect()` はリダイレクト先URLを指定しない → どこにリダイレクトされても通る（URL まで検証しない）
+
+---
+
+### 3ケースパターンまとめ
+
+全アクション共通で以下の3ケースを書く:
+
+| ケース | 内容 | 期待する結果 |
+|--------|------|-------------|
+| 正常 | 自分のリソースにアクセス | 200 or リダイレクト |
+| 未認証 | `actingAs` なし | `route('login')` にリダイレクト |
+| 他人 | 別ユーザーのリソース | 404 |
+
+- 未認証は Laravel のミドルウェアが弾く → コントローラーに届かない
+- 他人は Policy の `abort_if` が弾く → 404 を返す（403 にしない理由は前回ノート参照）
