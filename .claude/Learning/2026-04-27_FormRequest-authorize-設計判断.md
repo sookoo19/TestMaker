@@ -225,6 +225,69 @@ export default function Index({ tests }: Props) {
 
 ---
 
+## 追記: Laravel API Resource と Inertia のデータフロー
+
+### API Resource（app/Http/Resources/TestResource.php）の役割
+
+「モデルを JSON に変換するフィルター」。
+
+```php
+public function toArray(): array
+{
+    return [
+        'id' => $this->id,
+        'title' => $this->title,
+        // user_id など不要なフィールドは含めない
+    ];
+}
+```
+
+- モデルの全フィールドをそのまま返さず、フロントに必要なフィールドだけ選んで返す
+- 不要フィールドの隠蔽・フォーマット変換・関連モデルの整形が主な用途
+
+### `data` ラップの正しい理解
+
+`TestResource::collection($tests)` が `{ data: [...] }` にラップする理由は **Inertia とは無関係**。Laravel API Resource 自体の仕様。
+
+目的: ページネーションのメタ情報を一緒に返せる構造にするため。
+
+```json
+{
+  "data": [...],
+  "meta": { "total": 100, "per_page": 15 }
+}
+```
+
+`data` キーがなければメタ情報を追加する場所がない。
+
+### Inertia のデータフロー
+
+Inertia は文字列だけでなく、配列・オブジェクト・数値・真偽値すべて渡せる。
+
+```php
+// コントローラー（PHP）
+Inertia::render('Tests/Index', [
+    'tests' => TestResource::collection($tests),  // PHP オブジェクト
+]);
+```
+
+内部フロー:
+```
+PHP オブジェクト → JSON シリアライズ（Inertia が自動） → JS オブジェクトとして props に渡る
+```
+
+フロント側では普通の JS オブジェクト・配列として扱える。
+
+### ファイルの場所まとめ
+
+| ファイル | 役割 |
+|----------|------|
+| `app/Http/Resources/TestResource.php` | モデル → JSON 変換フィルター |
+| `app/Http/Controllers/TestController.php` | Resource を使って Inertia に渡す |
+| `resources/js/pages/Tests/Index.tsx` | `tests.data` として受け取る |
+
+---
+
 ## 追記: Tests/Index 完成
 
 ### 完成したコード
