@@ -95,3 +95,117 @@ describe('store', function () {
         $response->assertNotFound();
     });
 });
+
+describe('show', function () {
+    test('ログインユーザーは選択肢を取得できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->get(
+            route('question_choices.show', $choice)
+        );
+
+        $response->assertOk();
+    });
+
+    test('未認証ユーザーはログインページにリダイレクトされる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->get(route('question_choices.show', $choice));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('他人の選択肢は取得できない', function () {
+        $otherUser = User::factory()->create();
+        $otherTest = Test::factory()->create(['user_id' => $otherUser->id]);
+        $otherQuestion = Question::factory()->create(['test_id' => $otherTest->id]);
+        $otherChoice = QuestionChoice::factory()->create(['question_id' => $otherQuestion->id]);
+
+        $response = $this->actingAs($this->user)->get(
+            route('question_choices.show', $otherChoice)
+        );
+
+        $response->assertNotFound();
+    });
+});
+
+describe('update', function () {
+    test('ログインユーザーは選択肢を更新できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->put(
+            route('question_choices.update', $choice),
+            [
+                'choice_text' => '更新後テキスト',
+                'is_correct' => false,
+                'sort_order' => 1,
+            ]
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('question_choices', [
+            'id' => $choice->id,
+            'choice_text' => '更新後テキスト',
+        ]);
+    });
+
+    test('未認証ユーザーはログインページにリダイレクトされる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->put(route('question_choices.update', $choice), []);
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('他人の選択肢は更新できない', function () {
+        $otherUser = User::factory()->create();
+        $otherTest = Test::factory()->create(['user_id' => $otherUser->id]);
+        $otherQuestion = Question::factory()->create(['test_id' => $otherTest->id]);
+        $otherChoice = QuestionChoice::factory()->create(['question_id' => $otherQuestion->id]);
+
+        $response = $this->actingAs($this->user)->put(
+            route('question_choices.update', $otherChoice),
+            [
+                'choice_text' => '更新後テキスト',
+                'is_correct' => false,
+                'sort_order' => 1,
+            ]
+        );
+
+        $response->assertNotFound();
+    });
+});
+
+describe('destroy', function () {
+    test('ログインユーザーは選択肢を削除できる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->actingAs($this->user)->delete(
+            route('question_choices.destroy', $choice)
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('question_choices', ['id' => $choice->id]);
+    });
+
+    test('未認証ユーザーはログインページにリダイレクトされる', function () {
+        $choice = QuestionChoice::factory()->create(['question_id' => $this->question->id]);
+
+        $response = $this->delete(route('question_choices.destroy', $choice));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('他人の選択肢は削除できない', function () {
+        $otherUser = User::factory()->create();
+        $otherTest = Test::factory()->create(['user_id' => $otherUser->id]);
+        $otherQuestion = Question::factory()->create(['test_id' => $otherTest->id]);
+        $otherChoice = QuestionChoice::factory()->create(['question_id' => $otherQuestion->id]);
+
+        $response = $this->actingAs($this->user)->delete(
+            route('question_choices.destroy', $otherChoice)
+        );
+
+        $response->assertNotFound();
+    });
+});
