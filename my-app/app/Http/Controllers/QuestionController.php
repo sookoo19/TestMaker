@@ -60,7 +60,7 @@ class QuestionController extends Controller
 
         $question = $test->questions()->create($request->validated());
 
-        return redirect()->route('questions.show', $question);
+        return redirect()->route('tests.questions.index', $test);
     }
 
     /**
