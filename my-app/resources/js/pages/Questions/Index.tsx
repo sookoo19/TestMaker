@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { show } from '@/routes/questions';
-import { index as testsIndex, show as testShow } from '@/routes/tests';
+import { show as testShow, index as testsIndex } from '@/routes/tests';
 import { create } from '@/routes/tests/questions';
 import { type BreadcrumbItem, type Question, type Test } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -31,7 +31,7 @@ export default function Index({ test, questions }: Props) {
                     </Link>
                 </div>
                 {questions.length === 0 ? (
-                    <p className='text-muted-foreground text-sm'>
+                    <p className='text-sm text-muted-foreground'>
                         問題がまだありません
                     </p>
                 ) : (
