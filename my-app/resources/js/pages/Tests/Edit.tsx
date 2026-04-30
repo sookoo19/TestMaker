@@ -78,6 +78,9 @@ export default function Edit({ test }: Props) {
                                     defaultValue={test.difficulty ?? ''}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 >
+                                    <option value='' disabled>
+                                        選択してください
+                                    </option>
                                     <option value='easy'>Easy</option>
                                     <option value='medium'>Medium</option>
                                     <option value='hard'>Hard</option>

@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { show } from '@/routes/questions';
-import { show as testShow } from '@/routes/tests';
+import { show as testShow, index as testsIndex } from '@/routes/tests';
 import { create } from '@/routes/tests/questions';
 import { type BreadcrumbItem, type Question, type Test } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -12,7 +12,7 @@ interface Props {
 
 export default function Index({ test, questions }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'テスト一覧', href: testShow(test).url },
+        { title: 'テスト一覧', href: testsIndex().url },
         { title: test.title, href: testShow(test).url },
         { title: '問題一覧', href: '' },
     ];
@@ -31,7 +31,7 @@ export default function Index({ test, questions }: Props) {
                     </Link>
                 </div>
                 {questions.length === 0 ? (
-                    <p className='text-muted-foregruond text-sm'>
+                    <p className='text-sm text-muted-foreground'>
                         問題がまだありません
                     </p>
                 ) : (
@@ -48,7 +48,7 @@ export default function Index({ test, questions }: Props) {
                                     Q{index + 1}. {question.question_text}
                                 </Link>
                                 <p className='mt-1 text-muted-foreground'>
-                                    {question.question_type}・難易度:
+                                    {question.question_type}・難易度:{' '}
                                     {question.difficulty ?? '—'}
                                 </p>
                             </li>

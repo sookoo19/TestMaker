@@ -50,8 +50,8 @@ reviewer名が上記のいずれにも一致しない場合は、エラーとし
 
 **スキル型** ( `vercel-composition-patterns`, `vercel-react-best-practices`, `web-design-guidelines`):
 
-1. 対応する `AGENTS.md` ファイルを読み込む
-2. `subagent_type: general-purpose` で起動し、プロンプトに「AGENTS.mdのガイドライン全文 + diff」を含める
+1. 対応する `AGENTS.md`、`SKILL.md` ファイルを読み込む
+2. `subagent_type: general-purpose` で起動し、プロンプトに「AGENTS.md or SKILL.mdのガイドライン全文 + diff」を含める
 3. 「このガイドラインに照らしてdiffをレビューし、違反・改善点を日本語で報告してください」と指示する
 
 ## ステップ3: レビュー修正

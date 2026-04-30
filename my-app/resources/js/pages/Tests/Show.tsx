@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { destroy, edit, index as testsIndex } from '@/routes/tests';
+import { index as questionsIndex } from '@/routes/tests/questions';
 import { type BreadcrumbItem, type Question, type Test } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
@@ -65,7 +66,15 @@ export default function Show({ test }: Props) {
                         <dd>{test.output_language}</dd>
                     </div>
                 </dl>
-                <h2 className='mb-3 text-lg font-semibold'>質問一覧</h2>
+                <div className='mb-3 flex items-center justify-between'>
+                    <h2 className='text-lg font-semibold'>質問一覧</h2>
+                    <Link
+                        href={questionsIndex(test).url}
+                        className='text-sm hover:underline'
+                    >
+                        問題を管理する
+                    </Link>
+                </div>
                 {test.questions.length === 0 ? (
                     <p className='text-sm text-muted-foreground'>
                         質問がまだありません。
