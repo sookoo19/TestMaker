@@ -34,7 +34,7 @@ export default function Index({ tests }: Props) {
                         <Link key={test.id} href={show(test).url}>
                             <Card className='transition-colors hover:bg-muted/50'>
                                 <CardHeader className='pb-2'>
-                                    <div className='items-strat flex justify-between'>
+                                    <div className='flex items-start justify-between'>
                                         <CardTitle className='text-base'>
                                             {test.title}
                                         </CardTitle>

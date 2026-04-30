@@ -1,29 +1,29 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { show as testShow } from '@/routes/tests';
-import { index as questionsIndex, store } from '@/routes/tests/questions';
-import { type BreadcrumbItem, type Test } from '@/types';
+import { show as questionShow, update } from '@/routes/questions';
+import { show as testShow, index as testsIndex } from '@/routes/tests';
+import { type BreadcrumbItem, type Question } from '@/types';
 import { Form, Head } from '@inertiajs/react';
 
 interface Props {
-    test: Test;
+    question: Question & { test: { id: number; title: string } };
 }
 
-export default function Create({ test }: Props) {
+export default function Edit({ question }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'テスト一覧', href: testShow(test).url },
-        { title: test.title, href: testShow(test).url },
-        { title: '質問一覧', href: questionsIndex(test).url },
-        { title: '質問作成', href: '' },
+        { title: 'テスト一覧', href: testsIndex().url },
+        { title: question.test.title, href: testShow(question.test).url },
+        { title: question.question_text, href: questionShow(question).url },
+        { title: '編集', href: '' },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title='質問作成' />
+            <Head title='質問編集' />
             <div className='max-w-xl p-6'>
-                <h1 className='mb-6 text-2xl font-bold'>質問作成</h1>
-                <Form {...store.form(test)} className='space-y-4'>
+                <h1 className='mb-6 text-2xl font-bold'>質問編集</h1>
+                <Form {...update.form(question)} className='space-y-4'>
                     {({ processing, errors }) => (
                         <>
                             <div>
@@ -31,12 +31,9 @@ export default function Create({ test }: Props) {
                                 <select
                                     id='question_type'
                                     name='question_type'
-                                    defaultValue=''
+                                    defaultValue={question.question_type}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 >
-                                    <option value='' disabled>
-                                        選択してください
-                                    </option>
                                     <option value='descriptive'>記述式</option>
                                     <option value='choice'>選択式</option>
                                     <option value='fill_blank'>穴埋め</option>
@@ -54,6 +51,7 @@ export default function Create({ test }: Props) {
                                     id='question_text'
                                     name='question_text'
                                     rows={3}
+                                    defaultValue={question.question_text}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 />
                                 {errors.question_text && (
@@ -68,6 +66,7 @@ export default function Create({ test }: Props) {
                                     id='correct_answer'
                                     name='correct_answer'
                                     rows={2}
+                                    defaultValue={question.correct_answer}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 />
                                 {errors.correct_answer && (
@@ -82,6 +81,7 @@ export default function Create({ test }: Props) {
                                     id='explanation'
                                     name='explanation'
                                     rows={2}
+                                    defaultValue={question.explanation ?? ''}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 />
                                 {errors.explanation && (
@@ -95,7 +95,7 @@ export default function Create({ test }: Props) {
                                 <select
                                     id='difficulty'
                                     name='difficulty'
-                                    defaultValue=''
+                                    defaultValue={question.difficulty ?? ''}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 >
                                     <option value='' disabled>
@@ -111,9 +111,13 @@ export default function Create({ test }: Props) {
                                     </p>
                                 )}
                             </div>
-                            <input type='hidden' name='sort_order' value='1' />
+                            <input
+                                type='hidden'
+                                name='sort_order'
+                                value={question.sort_order}
+                            />
                             <Button type='submit' disabled={processing}>
-                                作成
+                                更新
                             </Button>
                         </>
                     )}
