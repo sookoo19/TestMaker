@@ -5,14 +5,16 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
-    Form: vi.fn(({
-        children,
-    }: {
-        children: (props: {
-            processing: boolean;
-            errors: Record<string, string>;
-        }) => React.ReactNode;
-    }) => <form>{children({ processing: false, errors: {} })}</form>),
+    Form: vi.fn(
+        ({
+            children,
+        }: {
+            children: (props: {
+                processing: boolean;
+                errors: Record<string, string>;
+            }) => React.ReactNode;
+        }) => <form>{children({ processing: false, errors: {} })}</form>,
+    ),
 }));
 
 vi.mock('@/layouts/app-layout', () => ({
@@ -21,7 +23,12 @@ vi.mock('@/layouts/app-layout', () => ({
 
 vi.mock('@/routes/questions', () => ({
     show: (question: { id: number }) => ({ url: `/questions/${question.id}` }),
-    update: { form: (question: { id: number }) => ({ action: `/questions/${question.id}`, method: 'put' }) },
+    update: {
+        form: (question: { id: number }) => ({
+            action: `/questions/${question.id}`,
+            method: 'put',
+        }),
+    },
 }));
 
 vi.mock('@/routes/tests', () => ({
@@ -71,7 +78,12 @@ describe('Questions/Edit', () => {
         const { Form } = await import('@inertiajs/react');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (Form as any).mockImplementationOnce(({ children }: any) => (
-            <form>{children({ processing: false, errors: { question_text: '問題文は必須です' } })}</form>
+            <form>
+                {children({
+                    processing: false,
+                    errors: { question_text: '問題文は必須です' },
+                })}
+            </form>
         ));
         render(<Edit question={baseQuestion} />);
         expect(screen.getByText('問題文は必須です')).toBeInTheDocument();

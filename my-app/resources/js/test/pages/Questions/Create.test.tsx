@@ -5,14 +5,16 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
-    Form: vi.fn(({
-        children,
-    }: {
-        children: (props: {
-            processing: boolean;
-            errors: Record<string, string>;
-        }) => React.ReactNode;
-    }) => <form>{children({ processing: false, errors: {} })}</form>),
+    Form: vi.fn(
+        ({
+            children,
+        }: {
+            children: (props: {
+                processing: boolean;
+                errors: Record<string, string>;
+            }) => React.ReactNode;
+        }) => <form>{children({ processing: false, errors: {} })}</form>,
+    ),
 }));
 
 vi.mock('@/layouts/app-layout', () => ({
@@ -25,7 +27,12 @@ vi.mock('@/routes/tests', () => ({
 
 vi.mock('@/routes/tests/questions', () => ({
     index: (test: { id: number }) => ({ url: `/tests/${test.id}/questions` }),
-    store: { form: (test: { id: number }) => ({ action: `/tests/${test.id}/questions`, method: 'post' }) },
+    store: {
+        form: (test: { id: number }) => ({
+            action: `/tests/${test.id}/questions`,
+            method: 'post',
+        }),
+    },
 }));
 
 const baseTest = {
@@ -60,7 +67,12 @@ describe('Questions/Create', () => {
         const { Form } = await import('@inertiajs/react');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (Form as any).mockImplementationOnce(({ children }: any) => (
-            <form>{children({ processing: false, errors: { question_text: '問題文は必須です' } })}</form>
+            <form>
+                {children({
+                    processing: false,
+                    errors: { question_text: '問題文は必須です' },
+                })}
+            </form>
         ));
         render(<Create test={baseTest} />);
         expect(screen.getByText('問題文は必須です')).toBeInTheDocument();

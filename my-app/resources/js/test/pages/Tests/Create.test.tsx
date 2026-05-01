@@ -5,14 +5,16 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
-    Form: vi.fn(({
-        children,
-    }: {
-        children: (props: {
-            processing: boolean;
-            errors: Record<string, string>;
-        }) => React.ReactNode;
-    }) => <form>{children({ processing: false, errors: {} })}</form>),
+    Form: vi.fn(
+        ({
+            children,
+        }: {
+            children: (props: {
+                processing: boolean;
+                errors: Record<string, string>;
+            }) => React.ReactNode;
+        }) => <form>{children({ processing: false, errors: {} })}</form>,
+    ),
 }));
 
 vi.mock('@/layouts/app-layout', () => ({
@@ -44,7 +46,12 @@ describe('Tests/Create', () => {
         const { Form } = await import('@inertiajs/react');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (Form as any).mockImplementationOnce(({ children }: any) => (
-            <form>{children({ processing: false, errors: { title: 'タイトルは必須です' } })}</form>
+            <form>
+                {children({
+                    processing: false,
+                    errors: { title: 'タイトルは必須です' },
+                })}
+            </form>
         ));
         render(<Create />);
         expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();

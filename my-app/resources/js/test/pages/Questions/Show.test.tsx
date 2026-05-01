@@ -16,8 +16,12 @@ vi.mock('@/layouts/app-layout', () => ({
 }));
 
 vi.mock('@/routes/questions', () => ({
-    edit: (question: { id: number }) => ({ url: `/questions/${question.id}/edit` }),
-    destroy: (question: { id: number }) => ({ url: `/questions/${question.id}` }),
+    edit: (question: { id: number }) => ({
+        url: `/questions/${question.id}/edit`,
+    }),
+    destroy: (question: { id: number }) => ({
+        url: `/questions/${question.id}`,
+    }),
 }));
 
 vi.mock('@/routes/tests', () => ({
