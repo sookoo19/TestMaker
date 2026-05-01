@@ -2,14 +2,15 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { destroy, edit } from '@/routes/questions';
 import { show as testShow, index as testsIndex } from '@/routes/tests';
-import { type BreadcrumbItem, type Question } from '@/types';
+import { type BreadcrumbItem, type Question, type QuestionChoice } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
 interface Props {
     question: Question & { test: { id: number; title: string } };
+    choices: QuestionChoice[];
 }
 
-export default function Show({ question }: Props) {
+export default function Show({ question, choices }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'テスト一覧', href: testsIndex().url },
         { title: question.test.title, href: testShow(question.test).url },
@@ -66,6 +67,37 @@ export default function Show({ question }: Props) {
                         <dd>{question.sort_order}</dd>
                     </div>
                 </dl>
+
+                {choices.length > 0 && (
+                    <div className='mt-6'>
+                        <h2 className='mb-2 text-sm font-medium text-muted-foreground'>
+                            選択肢
+                        </h2>
+                        <ul className='space-y-1'>
+                            {choices.map((choice) => (
+                                <li
+                                    key={choice.id}
+                                    className='flex items-center gap-2 text-sm'
+                                >
+                                    <span
+                                        className={
+                                            choice.is_correct
+                                                ? 'font-medium text-green-600'
+                                                : ''
+                                        }
+                                    >
+                                        {choice.choice_text}
+                                    </span>
+                                    {choice.is_correct && (
+                                        <span className='text-xs text-green-600'>
+                                            ✓ 正解
+                                        </span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

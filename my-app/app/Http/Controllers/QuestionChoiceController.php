@@ -41,7 +41,7 @@ class QuestionChoiceController extends Controller
 
         $choice = $question->questionChoices()->create($request->validated());
 
-        return redirect()->route('question_choices.show', $choice);
+        return redirect()->route('questions.edit', $question);
     }
 
     /**
@@ -71,7 +71,7 @@ class QuestionChoiceController extends Controller
 
         $questionChoice->update($request->validated());
 
-        return redirect()->route('question_choices.show', $questionChoice);
+        return redirect()->route('questions.edit', $questionChoice->question);
     }
 
     /**
@@ -87,6 +87,6 @@ class QuestionChoiceController extends Controller
         $question = $questionChoice->question;
         $questionChoice->delete();
 
-        return redirect()->route('questions.question_choices.index', $question);
+        return redirect()->route('questions.edit', $question);
     }
 }

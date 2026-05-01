@@ -58,9 +58,17 @@ class QuestionController extends Controller
             404
         );
 
-        $question = $test->questions()->create($request->validated());
+        $question = $test->questions()->create($request->safe()->except('choices'));
 
-        return redirect()->route('tests.questions.index', $test);
+        foreach ($request->validated()['choices'] ?? [] as $index => $choice) {
+            $question->questionChoices()->create([
+                'choice_text' => $choice['choice_text'],
+                'is_correct' => $choice['is_correct'],
+                'sort_order' => $index,
+            ]);
+        }
+
+        return redirect()->route('questions.show', $question);
     }
 
     /**
@@ -74,7 +82,10 @@ class QuestionController extends Controller
         );
 
         return Inertia::render('Questions/Show', [
-            'question' => new QuestionResource($question->load('test')),
+            'question' => new QuestionResource(
+                $question->load(['test', 'questionChoices' => fn ($q) => $q->orderBy('sort_order')])
+            ),
+            'choices' => $question->questionChoices,
         ]);
     }
 
@@ -89,7 +100,10 @@ class QuestionController extends Controller
         );
 
         return Inertia::render('Questions/Edit', [
-            'question' => new QuestionResource($question->load('test')),
+            'question' => new QuestionResource(
+                $question->load(['test', 'questionChoices' => fn ($q) => $q->orderBy('sort_order')])
+            ),
+            'choices' => $question->questionChoices,
         ]);
     }
 

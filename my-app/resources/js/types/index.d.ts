@@ -65,3 +65,12 @@ export interface Question {
     created_at: string;
     updated_at: string;
 }
+
+export interface QuestionChoice {
+    id: number;
+    choice_text: string;
+    is_correct: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+}
