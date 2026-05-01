@@ -44,12 +44,12 @@ const baseQuestion = {
 
 describe('Questions/Show', () => {
     it('問題文を表示する', () => {
-        render(<Show question={baseQuestion} />);
+        render(<Show question={baseQuestion} choices={[]} />);
         expect(screen.getByText('1+1は？')).toBeInTheDocument();
     });
 
     it('正解と解説を表示する', () => {
-        render(<Show question={baseQuestion} />);
+        render(<Show question={baseQuestion} choices={[]} />);
         expect(screen.getByText('2')).toBeInTheDocument();
         expect(screen.getByText('たし算の基本')).toBeInTheDocument();
     });
@@ -57,7 +57,7 @@ describe('Questions/Show', () => {
     it('削除確認で OK すると router.delete を呼ぶ', async () => {
         const { router } = await import('@inertiajs/react');
         vi.spyOn(window, 'confirm').mockReturnValue(true);
-        render(<Show question={baseQuestion} />);
+        render(<Show question={baseQuestion} choices={[]} />);
         await userEvent.click(screen.getByText('削除'));
         expect(router.delete).toHaveBeenCalledWith('/questions/1');
     });

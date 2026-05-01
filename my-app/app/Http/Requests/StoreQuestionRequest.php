@@ -28,6 +28,9 @@ class StoreQuestionRequest extends FormRequest
             'explanation' => ['nullable', 'string'],
             'difficulty' => ['required', 'in:easy,medium,hard'],
             'sort_order' => ['required', 'integer'],
+            'choices' => ['sometimes', 'array'],
+            'choices.*.choice_text' => ['required', 'string', 'max:255'],
+            'choices.*.is_correct' => ['required', 'boolean'],
         ];
     }
 }

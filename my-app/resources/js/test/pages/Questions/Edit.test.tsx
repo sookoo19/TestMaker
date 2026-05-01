@@ -15,6 +15,7 @@ vi.mock('@inertiajs/react', () => ({
             }) => React.ReactNode;
         }) => <form>{children({ processing: false, errors: {} })}</form>,
     ),
+    router: { post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
 }));
 
 vi.mock('@/layouts/app-layout', () => ({
@@ -29,6 +30,17 @@ vi.mock('@/routes/questions', () => ({
             method: 'put',
         }),
     },
+}));
+
+vi.mock('@/routes/question_choices', () => ({
+    update: (id: number) => ({ url: `/question_choices/${id}` }),
+    destroy: (id: number) => ({ url: `/question_choices/${id}` }),
+}));
+
+vi.mock('@/routes/questions/question_choices', () => ({
+    store: (question: { id: number }) => ({
+        url: `/questions/${question.id}/question_choices`,
+    }),
 }));
 
 vi.mock('@/routes/tests', () => ({
@@ -51,14 +63,14 @@ const baseQuestion = {
 
 describe('Questions/Edit', () => {
     it('既存値がフォームに表示される', () => {
-        render(<Edit question={baseQuestion} />);
+        render(<Edit question={baseQuestion} choices={[]} />);
         expect(screen.getByDisplayValue('1+1は？')).toBeInTheDocument();
         expect(screen.getByDisplayValue('2')).toBeInTheDocument();
         expect(screen.getByDisplayValue('たし算の基本')).toBeInTheDocument();
     });
 
     it('フォームフィールドを表示する', () => {
-        render(<Edit question={baseQuestion} />);
+        render(<Edit question={baseQuestion} choices={[]} />);
         expect(screen.getByLabelText('問題形式')).toBeInTheDocument();
         expect(screen.getByLabelText('問題文')).toBeInTheDocument();
         expect(screen.getByLabelText('答え')).toBeInTheDocument();
@@ -67,7 +79,7 @@ describe('Questions/Edit', () => {
     });
 
     it('問題文を変更できる', async () => {
-        render(<Edit question={baseQuestion} />);
+        render(<Edit question={baseQuestion} choices={[]} />);
         const textarea = screen.getByLabelText('問題文');
         await userEvent.clear(textarea);
         await userEvent.type(textarea, '2+2は？');
@@ -85,7 +97,7 @@ describe('Questions/Edit', () => {
                 })}
             </form>
         ));
-        render(<Edit question={baseQuestion} />);
+        render(<Edit question={baseQuestion} choices={[]} />);
         expect(screen.getByText('問題文は必須です')).toBeInTheDocument();
     });
 });
