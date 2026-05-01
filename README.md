@@ -11,3 +11,20 @@ sail artisan db
 
 - REPLの起動
 sail artisan tinker
+
+フロントエンドテスト（my-app/ で実行）
+- ウォッチモード（ファイル変更で自動再実行）
+npm test
+
+- 1回だけ実行
+npm run test:run
+
+バックエンドテスト（my-app/ で実行）
+- 全テスト実行
+composer test
+
+- ウォッチモード
+composer watch
+
+- 特定ファイルのみ
+php artisan test --filter=TestControllerTest
