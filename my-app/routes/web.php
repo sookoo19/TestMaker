@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('tests', TestController::class);
 
+    Route::post('tests/{test}/questions/generate', [QuestionController::class, 'generate'])->name('tests.questions.generate');
+    Route::post('tests/{test}/questions/batch', [QuestionController::class, 'batchStore'])->name('tests.questions.batch');
+
     // ネストしたルート
     Route::resource('tests.questions', QuestionController::class)->shallow();
 
