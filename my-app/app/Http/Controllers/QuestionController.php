@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BatchStoreQuestionsRequest;
 use App\Http\Requests\GenerateQuestionsRequest;
 use App\Http\Requests\StoreQuestionRequest;
 use App\Http\Requests\UpdateQuestionRequest;
@@ -13,7 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class QuestionController extends Controller
@@ -151,24 +149,24 @@ class QuestionController extends Controller
         abort_if($request->user()->cannot('view', $test), 404);
 
         // バリデーション済みデータを取り出す
-        $validated     = $request->validated();
-        $count         = $validated['count'];
-        $difficulty    = $validated['difficulty'];
-        $questionType  = $validated['question_type'];
+        $validated = $request->validated();
+        $count = $validated['count'];
+        $difficulty = $validated['difficulty'];
+        $questionType = $validated['question_type'];
 
         // 難易度を日本語に変換（AIへのプロンプト用）
         $difficultyJa = match ($difficulty) {
-            'easy'   => '易しい',
+            'easy' => '易しい',
             'medium' => '普通',
-            'hard'   => '難しい',
+            'hard' => '難しい',
         };
 
         // 問題形式を日本語の指示文に変換
         $questionTypeJa = match ($questionType) {
             'descriptive' => '記述式（question_textに問い、correct_answerに模範解答）',
-            'choice'      => '選択式（choicesに4つの選択肢、うち1つis_correct:true）',
-            'fill_blank'  => '穴埋め（question_textに___で空白、correct_answerに答え）',
-            'ordering'    => '並び替え（choicesに並び替え要素、correct_answerに正しい順序）',
+            'choice' => '選択式（choicesに4つの選択肢、うち1つis_correct:true）',
+            'fill_blank' => '穴埋め（question_textに___で空白、correct_answerに答え）',
+            'ordering' => '並び替え（choicesに並び替え要素、correct_answerに正しい順序）',
         };
 
         // AIに渡す指示書（どんなJSONを返すか定義）
@@ -192,7 +190,7 @@ class QuestionController extends Controller
         if ($validated['input_type'] === 'text') {
             // テキストモード: テーマ文字列 + 指示書をそのまま送る
             $messages = [[
-                'role'    => 'user',
+                'role' => 'user',
                 'content' => "テーマ: {$validated['topic']}\n\n{$instructionText}",
             ]];
         } else {
@@ -201,12 +199,12 @@ class QuestionController extends Controller
 
             foreach ($request->file('images') as $file) {
                 // ディスクI/Oを避けるためメモリ上で直接base64エンコード
-                $base64   = base64_encode(file_get_contents($file->getRealPath()));
+                $base64 = base64_encode(file_get_contents($file->getRealPath()));
                 $mimeType = $file->getMimeType();
 
                 // OpenAIの画像フォーマット: data:image/jpeg;base64,xxxxx
                 $contentParts[] = [
-                    'type'      => 'image_url',
+                    'type' => 'image_url',
                     'image_url' => ['url' => "data:{$mimeType};base64,{$base64}"],
                 ];
             }
@@ -220,9 +218,9 @@ class QuestionController extends Controller
         // OpenAI APIを呼び出す
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.config('services.openai.key'),
-            'Content-Type'  => 'application/json',
+            'Content-Type' => 'application/json',
         ])->post('https://api.openai.com/v1/chat/completions', [
-            'model'    => 'gpt-4o-mini',
+            'model' => 'gpt-4o-mini',
             'messages' => $messages,
         ]);
 
