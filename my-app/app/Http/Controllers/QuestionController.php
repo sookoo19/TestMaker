@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BatchStoreQuestionsRequest;
 use App\Http\Requests\GenerateQuestionsRequest;
 use App\Http\Requests\StoreQuestionRequest;
 use App\Http\Requests\UpdateQuestionRequest;
@@ -9,9 +10,10 @@ use App\Http\Resources\QuestionResource;
 use App\Models\Question;
 use App\Models\Test;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class QuestionController extends Controller
@@ -246,5 +248,44 @@ class QuestionController extends Controller
 
         // DBには保存せずフロントにそのまま返す（プレビュー用）
         return response()->json(['questions' => $questions]);
+    }
+
+    /**
+     * AI生成問題を一括でDBに保存する
+     */
+    public function batchStore(BatchStoreQuestionsRequest $request, Test $test): RedirectResponse
+    {
+        abort_if(
+            $request->user()->cannot('view', $test),
+            404
+        );
+
+        // 既存問題のsort_orderの最大値を取得（末尾に追加するため）
+        $existingMax = $test->questions()->max('sort_order') ?? 0;
+        $questions   = $request->validated()['questions'];
+
+        // 途中で例外が発生しても中途半端な状態にならないようトランザクションで保護
+        DB::transaction(function () use ($test, $questions, $existingMax) {
+            foreach ($questions as $index => $questionData) {
+                $question = $test->questions()->create([
+                    'question_type'  => $questionData['question_type'],
+                    'question_text'  => $questionData['question_text'],
+                    'correct_answer' => $questionData['correct_answer'],
+                    'explanation'    => $questionData['explanation'] ?? null,
+                    'difficulty'     => $questionData['difficulty'],
+                    'sort_order'     => $existingMax + $index + 1,
+                ]);
+
+                foreach ($questionData['choices'] ?? [] as $choiceIndex => $choice) {
+                    $question->questionChoices()->create([
+                        'choice_text' => $choice['choice_text'],
+                        'is_correct'  => $choice['is_correct'],
+                        'sort_order'  => $choiceIndex,
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route('tests.show', $test);
     }
 }

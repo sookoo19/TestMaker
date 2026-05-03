@@ -149,9 +149,127 @@ $questions = json_decode(trim($text), true);
 
 ## 次回への課題・疑問点
 
-- [ ] Step 6: `batchStore` メソッドの実装
-- [ ] Step 7: `routes/web.php` にルートを追加
+- [ ] ~~Step 6: `batchStore` メソッドの実装~~ ✅
+- [ ] ~~Step 7: `routes/web.php` にルートを追加~~ ✅
 - [ ] Step 8: フロントエンド `AiGenerateDialog` コンポーネントの実装
 - [ ] Step 9: `Tests/Show.tsx` に「AI生成」ボタンを追加
 - [ ] `gpt-4o-mini` の画像認識はどの程度正確か？実際に教科書写真で試してみる
 - [ ] `json_decode` が失敗したとき（AIが想定外の返答をしたとき）のハンドリングをもっと詳しく知りたい
+
+---
+
+## 追記: batchStore・ルーティング・Gitブランチ操作（同日）
+
+---
+
+## 今日学んだ概念（追記）
+
+### DB::transaction() — データベーストランザクション
+- **何か**: 複数のDB操作をひとまとまりにして「全部成功 or 全部なかったこと」にする仕組み
+- **なぜ必要か**: ループ途中で例外が発生すると一部の問題だけ保存された中途半端な状態になる。トランザクションで包めば途中失敗時に自動ロールバック
+- **例え**: 銀行振込と同じ。「送金側の残高を減らす」と「受取側の残高を増やす」はセットで成功するか、両方なかったことにならなければいけない
+
+### ルートの順序（Laravel のマッチング）
+- **何か**: Laravel はルートを上から順にマッチする。先に書いたルートが優先される
+- **なぜ必要か**: `/tests/{test}/questions/generate` を `Route::resource` の後に書くと、`generate` が `{question}` パラメータとして解釈されてしまう
+- **例え**: 宅配の振り分けルール。「東京都渋谷区」を先に処理しないと「東京都」の汎用ルールに吸い込まれてしまう
+
+### feature ブランチを作り忘れた時の対処
+- **何か**: コミット後にブランチを作り、main を1つ前に戻す操作
+- **なぜ必要か**: main に直接コミットしてしまったが、個人開発の規約では `feature/*` ブランチで作業する
+
+---
+
+## 書いたコード（追記）
+
+### batchStore — AI生成問題の一括保存
+
+```php
+/**
+ * AI生成問題を一括でDBに保存する
+ */
+public function batchStore(BatchStoreQuestionsRequest $request, Test $test): RedirectResponse
+{
+    abort_if(
+        $request->user()->cannot('view', $test),
+        404
+    );
+
+    $existingMax = $test->questions()->max('sort_order') ?? 0;
+    $questions   = $request->validated()['questions'];
+
+    // 途中で例外が発生しても中途半端な状態にならないようトランザクションで保護
+    DB::transaction(function () use ($test, $questions, $existingMax) {
+        foreach ($questions as $index => $questionData) {
+            $question = $test->questions()->create([
+                'question_type'  => $questionData['question_type'],
+                'question_text'  => $questionData['question_text'],
+                'correct_answer' => $questionData['correct_answer'],
+                'explanation'    => $questionData['explanation'] ?? null,
+                'difficulty'     => $questionData['difficulty'],
+                'sort_order'     => $existingMax + $index + 1,
+            ]);
+
+            foreach ($questionData['choices'] ?? [] as $choiceIndex => $choice) {
+                $question->questionChoices()->create([
+                    'choice_text' => $choice['choice_text'],
+                    'is_correct'  => $choice['is_correct'],
+                    'sort_order'  => $choiceIndex,
+                ]);
+            }
+        }
+    });
+
+    return redirect()->route('tests.show', $test);
+}
+```
+
+**ポイント解説:**
+- `$existingMax + $index + 1`: 既存問題の末尾に連番で追加。テストに既に3問あれば AI 生成問題は 4, 5, 6 番になる
+- `DB::transaction(function () use (...) { })`: クロージャ（無名関数）の中で DB 操作をまとめる。`use` で外側の変数を取り込む
+- `$questionData['choices'] ?? []`: choices が null や未定義のとき空配列にフォールバック（選択式以外は choices がない）
+
+---
+
+### routes/web.php — カスタムルートをリソースルートの前に追加
+
+```php
+// ★ resource より前に書く（後だと {question} にマッチしてしまう）
+Route::post('tests/{test}/questions/generate', [QuestionController::class, 'generate'])->name('tests.questions.generate');
+Route::post('tests/{test}/questions/batch', [QuestionController::class, 'batchStore'])->name('tests.questions.batch');
+
+Route::resource('tests.questions', QuestionController::class)->shallow();
+```
+
+**ポイント解説:**
+- `->name('tests.questions.generate')`: ルートに名前をつける。コードから `route('tests.questions.generate')` で URL を生成できる
+- `->shallow()`: 子リソースの show/edit/update/destroy は親IDなしの URL にする（`questions/{question}` で済む）
+
+---
+
+### feature ブランチを後から作る操作
+
+```bash
+# 1. 現在のコミットから feature ブランチを作成
+git checkout -b feature/ai-question-generation
+
+# 2. main を1コミット前に戻す（ローカルのみ、push 前なら安全）
+git checkout main
+git reset --hard HEAD~1
+
+# 3. feature ブランチに戻る
+git checkout feature/ai-question-generation
+```
+
+**ポイント解説:**
+- `git checkout -b`: ブランチを新規作成して同時に切り替え
+- `git reset --hard HEAD~1`: HEAD（最新コミット）から1つ前に戻す。`--hard` はワーキングツリーも変更される
+- push 済みのコミットに `reset --hard` すると他の人のリポジトリと履歴がずれるので **push 前限定の操作**
+
+---
+
+## なぜそう書くか（設計の理由）（追記）
+
+- **DB::transaction で包む理由**: 10問生成して5問目の途中でサーバーエラーが起きると、5問だけ保存された不完全なテストが残る。トランザクションなら「全部保存 or 何も保存しない」が保証される
+- **ルート順序**: Laravel のルーターは上から順にマッチするため、`/generate` や `/batch` を `Route::resource` より後に書くと `{question}` パラメータとして解釈されて意図しないコントローラアクションが呼ばれる
+- **N+1 を許容した理由**: 最大10問×4択 = 50クエリ。バルクインサートに書き換えると `created_at`/`updated_at` を手動で設定する必要があり複雑になる。学習プロジェクトのこの規模では過剰な最適化
