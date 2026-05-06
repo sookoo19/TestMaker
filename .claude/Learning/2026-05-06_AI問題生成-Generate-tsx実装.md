@@ -378,3 +378,220 @@ if (!res.ok) throw new Error(json.error ?? json.message ?? 'エラーが発生�
 - **`autocomplete` / `name` 属性**: FormData を JS で手動構築するため不要
 
 レビュー指摘を全部対応するのが正解ではない。**プロジェクトの状況・実害の有無・トレードオフ**を考えて取捨選択することが重要。
+
+---
+
+---
+
+# 問題の並び替え（drag & drop）実装
+
+**日付**: 2026-05-06
+**会話の概要**: `@dnd-kit` を使って問題一覧ページにドラッグ&ドロップ並び替えを実装し、バックエンドに `reorder` エンドポイントを追加した。セルフレビューで認可漏れ・二重送信・アクセシビリティの問題を発見して修正した。
+
+---
+
+## 今日学んだ概念
+
+### `@dnd-kit` — React の drag & drop ライブラリ
+
+- **何か**: React 向けの drag & drop 実装ライブラリ。`react-beautiful-dnd` の後継として広く使われている
+- **なぜ必要か**: ブラウザのネイティブ drag & drop API は細かい制御が難しく、アクセシビリティ対応も自前で書く必要がある。`@dnd-kit` はそれをまとめて提供してくれる
+- **例え**: ドラッグのルール（どこまで動けるか、どこにドロップできるか）をゲームのルールブックとして定義する感覚
+
+```
+@dnd-kit/core      — ドラッグの基盤（センサー・コンテキスト）
+@dnd-kit/sortable  — リストの並び替えに特化したユーティリティ
+@dnd-kit/utilities — CSS 変換などのヘルパー
+```
+
+---
+
+### `DndContext` と `SortableContext` — 2 層のラッパー
+
+- **何か**: `DndContext` が「この範囲でドラッグが起きる」を宣言し、`SortableContext` が「この配列を並び替え対象にする」を宣言する
+- **なぜ必要か**: ドラッグの範囲と並び替え対象を分けることで、複数リストのドラッグ移動なども対応できる柔軟な設計になっている
+
+```tsx
+<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <SortableContext items={items.map((q) => q.id)} strategy={verticalListSortingStrategy}>
+        <ul>
+            {items.map((q, i) => <SortableItem key={q.id} question={q} index={i} />)}
+        </ul>
+    </SortableContext>
+</DndContext>
+```
+
+- `collisionDetection={closestCenter}` — ドロップ先の判定方法。「一番近い要素の中心」でドロップ先を決める
+- `strategy={verticalListSortingStrategy}` — 縦方向のリストに最適化された並び替え計算
+
+---
+
+### `useSortable` — アイテムに drag 機能を付けるフック
+
+- **何か**: 各リストアイテムに対して呼び出すフック。ドラッグに必要な ref・スタイル・イベントハンドラをまとめて返してくれる
+- **なぜ必要か**: DOM 要素のどこをつかんで動かすか、どのくらいずれたか、などの計算を自動でやってくれる
+
+```tsx
+const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: question.id });
+
+const style = {
+    transform: CSS.Transform.toString(transform), // ドラッグ中の移動量をCSS文字列に変換
+    transition,                                    // ドロップ後のアニメーション
+};
+
+return (
+    <li ref={setNodeRef} style={style}>
+        {/* ハンドル部分だけに listeners を付ける（リンクのクリックと干渉しないため） */}
+        <span {...attributes} {...listeners} aria-label='ドラッグして並び替え'>
+            <span aria-hidden='true'>⠿</span>
+        </span>
+    </li>
+);
+```
+
+- `setNodeRef` — dnd-kit が DOM 要素を追跡するための ref
+- `attributes` — `role="button"`, `tabIndex` など、アクセシビリティ属性
+- `listeners` — ポインタ・キーボードイベントのハンドラ
+- `transform` — ドラッグ中の要素の移動量（x, y の数値）
+
+---
+
+### `arrayMove` — 配列の並び替えユーティリティ
+
+- **何か**: 配列の要素を「古いインデックスから新しいインデックス」へ移動した新しい配列を返す関数
+- **なぜ必要か**: `splice` や手動での配列操作は副作用があるが、`arrayMove` はイミュータブルに新しい配列を返す
+
+```tsx
+const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return; // 同じ位置なら何もしない
+
+    setItems((prev) => {
+        const oldIndex = prev.findIndex((q) => q.id === active.id);
+        const newIndex = prev.findIndex((q) => q.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex); // 新しい配列を返す
+    });
+    setIsDirty(true);
+};
+```
+
+---
+
+### `isDirty` フラグ — 未保存の変更を追跡するパターン
+
+- **何か**: 「まだ保存されていない変更がある」かどうかを管理する boolean の state
+- **なぜ必要か**: ドラッグするたびに自動保存するとリクエストが大量に飛ぶ。ユーザーが意図的に「保存する」を押したときだけ保存する設計にするため
+
+```tsx
+const [isDirty, setIsDirty] = useState(false);
+
+// ドラッグ完了 → isDirty を true に
+const handleDragEnd = (...) => {
+    ...
+    setIsDirty(true);
+};
+
+// 保存ボタンは isDirty のときだけ表示
+{isDirty && <Button onClick={handleReorder}>順番を保存</Button>}
+```
+
+---
+
+### `router.patch` のコールバック — Inertia の非同期制御
+
+- **何か**: Inertia の `router.patch` は第3引数にコールバックオブジェクトを渡せる
+- **なぜ必要か**: `setIsDirty(false)` をリクエスト送信直後に呼ぶと、通信失敗してもボタンが消える。`onSuccess` 内で呼ぶことで「保存が成功したとき」だけ状態をリセットできる
+
+```tsx
+const [isSaving, setIsSaving] = useState(false);
+
+const handleReorder = () => {
+    setIsSaving(true);
+    router.patch(
+        reorder(test).url,
+        { ids: items.map((q) => q.id) },
+        {
+            onSuccess: () => setIsDirty(false),  // 成功時のみ dirty をリセット
+            onFinish:  () => setIsSaving(false), // 成功・失敗どちらでも saving を解除
+        },
+    );
+};
+```
+
+- `onSuccess` — HTTP 200 系レスポンス時に実行
+- `onFinish` — 成功・失敗問わず必ず実行（`try/finally` に相当）
+
+---
+
+### `KeyboardSensor` — キーボードでのドラッグ対応
+
+- **何か**: dnd-kit でキーボード操作によるドラッグを有効にするセンサー
+- **なぜ必要か**: マウスが使えないユーザーや、キーボード派のユーザーが並び替えできないとアクセシビリティ違反になる
+- `sortableKeyboardCoordinates` — キーボード操作時の移動量を計算するヘルパー。矢印キーで上下に移動できるようになる
+
+```tsx
+import { KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+
+const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+);
+```
+
+---
+
+## 書いたコード
+
+### バックエンド — `reorder` メソッド（認可漏れ対策含む）
+
+```php
+public function reorder(Request $request, Test $test): RedirectResponse
+{
+    abort_if($request->user()->cannot('view', $test), 404);
+
+    $validated = $request->validate([
+        'ids'   => ['required', 'array'],
+        'ids.*' => ['integer', 'exists:questions,id'],
+    ]);
+    $ids = $validated['ids'];
+
+    // 渡された IDs が全てこのテストの問題か検証
+    $validIds = $test->questions()->pluck('id')->all();
+    abort_if(count(array_diff($ids, $validIds)) > 0, 422);
+
+    foreach ($ids as $order => $id) {
+        $test->questions()->where('id', $id)->update(['sort_order' => $order + 1]);
+    }
+
+    return redirect()->back();
+}
+```
+
+**ポイント解説:**
+- `exists:questions,id` — DB に存在しない ID を早期に弾くバリデーション
+- `array_diff($ids, $validIds)` — 「渡されたIDのうち、このテストに属さないものの数」。これが 0 より大きければ不正なリクエスト
+- なぜこの検証が必要か: `$test->questions()->where('id', $id)` のクエリは `test_id` で絞っているため、他テストの ID を送ってもエラーなく素通りしてしまう（単にヒットしないだけ）。明示的に検証して 422 を返す必要がある
+
+---
+
+### `PATCH` — 部分更新に使う HTTP メソッド
+
+- **何か**: 「リソースの一部だけを更新する」HTTP メソッド
+- **`PUT` との違い**: `PUT` はリソース全体を置き換える。`PATCH` は一部のフィールドだけ更新する。今回は `sort_order` だけ変えるので `PATCH` が適切
+
+---
+
+## なぜそう書くか（設計の理由）
+
+- **`isDirty` + 保存ボタン方式**: ドラッグのたびに `router.patch` するのではなく、明示的な保存操作を設けることで不必要なリクエストを減らし、ユーザーが誤操作しても保存前にやり直せる
+- **認可を2段階にする**: (1) テストの所有者か（`abort_if cannot('view')`）、(2) IDs がこのテストに属するか（`array_diff` チェック）。1段階目だけでは不十分で、他テストのIDを混入されるリスクがある
+- **`onSuccess` で `setIsDirty(false)`**: リクエスト送信直後にリセットすると通信失敗時に状態が狂う。「保存が成功した」ことを確認してからリセットするのが正しい
+
+---
+
+## 次回への課題・疑問点
+
+- [ ] `reorder` の N+1 クエリ解消（`upsert` や `CASE WHEN` を使った一括 UPDATE）
+- [ ] `reorder` のフィーチャーテスト追加（正常系・認可・バリデーション）
+- [ ] `prefers-reduced-motion` への対応（モーション軽減設定ユーザー向け）
