@@ -19,8 +19,8 @@ export default function Create({ test }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'テスト一覧', href: testShow(test).url },
         { title: test.title, href: testShow(test).url },
-        { title: '質問一覧', href: questionsIndex(test).url },
-        { title: '質問作成', href: '' },
+        { title: '問題一覧', href: questionsIndex(test).url },
+        { title: '問題作成', href: '' },
     ];
 
     const { data, setData, transform, post, processing, errors } = useForm({

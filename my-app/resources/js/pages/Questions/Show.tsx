@@ -2,7 +2,12 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { destroy, edit } from '@/routes/questions';
 import { show as testShow, index as testsIndex } from '@/routes/tests';
-import { type BreadcrumbItem, type Question, type QuestionChoice } from '@/types';
+import { index as questionsIndex } from '@/routes/tests/questions';
+import {
+    type BreadcrumbItem,
+    type Question,
+    type QuestionChoice,
+} from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
 interface Props {
@@ -14,6 +19,7 @@ export default function Show({ question, choices }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'テスト一覧', href: testsIndex().url },
         { title: question.test.title, href: testShow(question.test).url },
+        { title: '問題一覧', href: questionsIndex(question.test).url },
         { title: question.question_text, href: '' },
     ];
 

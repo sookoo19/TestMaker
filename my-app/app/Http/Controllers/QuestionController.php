@@ -145,6 +145,18 @@ class QuestionController extends Controller
         return redirect()->route('tests.show', $test);
     }
 
+    /**
+     * AI問題生成フォームを表示する
+     */
+    public function showGenerate(Request $request, Test $test): \Inertia\Response
+    {
+        abort_if($request->user()->cannot('view', $test), 404);
+
+        return Inertia::render('Questions/Generate', [
+            'test' => $test,
+        ]);
+    }
+
     public function generate(GenerateQuestionsRequest $request, Test $test): JsonResponse
     {
         // 他人のテストへのアクセスを404で弾く
