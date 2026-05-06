@@ -52,7 +52,7 @@ class TestController extends Controller
         );
 
         return Inertia::render('Tests/Show', [
-            'test' => new TestResource($test->load('questions')),
+            'test' => new TestResource($test->load(['questions' => fn ($q) => $q->orderBy('sort_order')])),
         ]);
     }
 

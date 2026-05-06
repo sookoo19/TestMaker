@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('tests/{test}/questions/generate', [QuestionController::class, 'showGenerate'])->name('tests.questions.generate.form');
     Route::post('tests/{test}/questions/generate', [QuestionController::class, 'generate'])->name('tests.questions.generate');
+    Route::patch('tests/{test}/questions/reorder', [QuestionController::class, 'reorder'])->name('tests.questions.reorder');
     Route::post('tests/{test}/questions/batch', [QuestionController::class, 'batchStore'])->name('tests.questions.batch');
 
     // ネストしたルート
