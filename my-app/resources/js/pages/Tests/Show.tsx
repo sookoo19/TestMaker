@@ -1,3 +1,4 @@
+import { showGenerate } from '@/actions/App/Http/Controllers/QuestionController';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { destroy, edit, index as testsIndex } from '@/routes/tests';
@@ -67,13 +68,21 @@ export default function Show({ test }: Props) {
                     </div>
                 </dl>
                 <div className='mb-3 flex items-center justify-between'>
-                    <h2 className='text-lg font-semibold'>質問一覧</h2>
-                    <Link
-                        href={questionsIndex(test).url}
-                        className='text-sm hover:underline'
-                    >
-                        問題を管理する
-                    </Link>
+                    <h2 className='text-lg font-semibold'>問題一覧</h2>
+                    <div className='flex gap-2'>
+                        <Link
+                            href={showGenerate(test).url}
+                            className='text-sm hover:underline'
+                        >
+                            AI生成
+                        </Link>
+                        <Link
+                            href={questionsIndex(test).url}
+                            className='text-sm hover:underline'
+                        >
+                            問題を管理する
+                        </Link>
+                    </div>
                 </div>
                 {test.questions.length === 0 ? (
                     <p className='text-sm text-muted-foreground'>
