@@ -1,12 +1,13 @@
 import Index from '@/pages/Questions/Index';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
     Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
         <a href={href}>{children}</a>
     ),
+    router: { patch: vi.fn() },
 }));
 
 vi.mock('@/layouts/app-layout', () => ({
@@ -26,6 +27,10 @@ vi.mock('@/routes/tests/questions', () => ({
     create: (test: { id: number }) => ({
         url: `/tests/${test.id}/questions/create`,
     }),
+}));
+
+vi.mock('@/actions/App/Http/Controllers/QuestionController', () => ({
+    reorder: (test: { id: number }) => ({ url: `/tests/${test.id}/questions/reorder` }),
 }));
 
 const baseTest = {
@@ -53,6 +58,10 @@ const baseQuestion = {
 };
 
 describe('Questions/Index', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     it('問題一覧を表示する', () => {
         render(<Index test={baseTest} questions={[baseQuestion]} />);
         expect(screen.getByText(/1\+1は？/)).toBeInTheDocument();
@@ -61,5 +70,10 @@ describe('Questions/Index', () => {
     it('問題がないとき案内文を表示する', () => {
         render(<Index test={baseTest} questions={[]} />);
         expect(screen.getByText('問題がまだありません')).toBeInTheDocument();
+    });
+
+    it('初期状態では「順番を保存」ボタンを表示しない', () => {
+        render(<Index test={baseTest} questions={[baseQuestion]} />);
+        expect(screen.queryByRole('button', { name: '順番を保存' })).not.toBeInTheDocument();
     });
 });

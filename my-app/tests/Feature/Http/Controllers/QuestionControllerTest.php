@@ -212,3 +212,56 @@ describe('destroy', function () {
         $this->assertDatabaseHas('questions', ['id' => $otherQuestion->id]);
     });
 });
+
+describe('reorder', function () {
+    test('ログインユーザーは問題の並び替えを更新できる', function () {
+        $q1 = Question::factory()->create(['test_id' => $this->test->id, 'sort_order' => 1]);
+        $q2 = Question::factory()->create(['test_id' => $this->test->id, 'sort_order' => 2]);
+        $q3 = Question::factory()->create(['test_id' => $this->test->id, 'sort_order' => 3]);
+
+        $response = $this->actingAs($this->user)->patch(
+            route('tests.questions.reorder', $this->test),
+            ['ids' => [$q3->id, $q1->id, $q2->id]]
+        );
+
+        $response->assertRedirect();
+        expect($q3->fresh()->sort_order)->toBe(1);
+        expect($q1->fresh()->sort_order)->toBe(2);
+        expect($q2->fresh()->sort_order)->toBe(3);
+    });
+
+    test('未認証ユーザーはログインページにリダイレクトされる', function () {
+        $response = $this->patch(
+            route('tests.questions.reorder', $this->test),
+            ['ids' => []]
+        );
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('他人のテストの並び替えはできない', function () {
+        $otherUser = User::factory()->create();
+        $otherTest = Test::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($this->user)->patch(
+            route('tests.questions.reorder', $otherTest),
+            ['ids' => []]
+        );
+
+        $response->assertNotFound();
+    });
+
+    test('他のテストの問題IDを混入させると422になる', function () {
+        $q1 = Question::factory()->create(['test_id' => $this->test->id]);
+
+        $otherTest = Test::factory()->create(['user_id' => $this->user->id]);
+        $otherQuestion = Question::factory()->create(['test_id' => $otherTest->id]);
+
+        $response = $this->actingAs($this->user)->patch(
+            route('tests.questions.reorder', $this->test),
+            ['ids' => [$q1->id, $otherQuestion->id]]
+        );
+
+        $response->assertStatus(422);
+    });
+});
