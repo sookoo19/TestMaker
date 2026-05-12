@@ -12,7 +12,7 @@ class LayoutAdvisorService
     {
         $total = $questions->count();
         $typeCounts = $questions->groupBy('question_type')->map->count();
-        $avgLength = $questions->avg(fn ($q) => mb_strlen($q->question_text ?? ''));
+        $avgLength = (int) $questions->avg(fn ($q) => mb_strlen($q->question_text ?? ''));
 
         $prompt = <<<EOT
 以下のテスト情報を元に、Word文書のレイアウトをJSON形式で返してください。
@@ -33,7 +33,7 @@ class LayoutAdvisorService
 columnsは1または2、question_spacingはnarrow/normal/wide、choice_layoutはvertical/horizontal、answer_line_heightはsingle/triple、marginはnormal/wideから選んでください。
 EOT;
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(10)->withHeaders([
             'x-api-key' => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
             'content-type' => 'application/json',
@@ -45,12 +45,21 @@ EOT;
             ],
         ]);
 
+        if ($response->failed()) {
+            return $this->defaultLayout();
+        }
+
         $text = $response->json('content.0.text', '');
         $text = preg_replace('/^```(?:json)?\s*/m', '', $text);
         $text = preg_replace('/\s*```$/m', '', $text);
         $layout = json_decode(trim($text), true);
 
-        return is_array($layout) ? $layout : [
+        return is_array($layout) ? $layout : $this->defaultLayout();
+    }
+
+    private function defaultLayout(): array
+    {
+        return [
             'columns' => 1,
             'question_spacing' => 'normal',
             'choice_layout' => 'vertical',
