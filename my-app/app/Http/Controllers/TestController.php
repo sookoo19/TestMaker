@@ -6,8 +6,11 @@ use App\Http\Requests\StoreTestRequest;
 use App\Http\Requests\UpdateTestRequest;
 use App\Http\Resources\TestResource;
 use App\Models\Test;
+use App\Services\LayoutAdvisorService;
+use App\Services\TestWordGenerator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use PhpOffice\PhpWord\IOFactory;
 
 class TestController extends Controller
 {
@@ -92,5 +95,75 @@ class TestController extends Controller
         $test->delete();
 
         return redirect()->route('tests.index');
+    }
+
+    public function wordPreview(Request $request, Test $test)
+    {
+        abort_if(
+            $request->user()->cannot('view', $test),
+            404
+        );
+
+        $questions = $this->loadQuestions($test);
+        $layout = (new LayoutAdvisorService)->recommend($test, $questions);
+
+        return Inertia::render('Tests/WordPreview', [
+            'test' => new TestResource($test),
+            'layout' => $layout,
+        ]);
+    }
+
+    public function wordImage(Request $request, Test $test)
+    {
+        abort_if(
+            $request->user()->cannot('view', $test),
+            404
+        );
+
+        $questions = $this->loadQuestions($test);
+        $layout = (new LayoutAdvisorService)->recommend($test, $questions);
+
+        $section = in_array($request->query('section'), TestWordGenerator::VALID_SECTIONS)
+            ? $request->query('section')
+            : 'exam';
+        $phpWord = (new TestWordGenerator)->generate($test, $questions, $layout, $section);
+
+        /** @var \PhpOffice\PhpWord\Writer\HTML $writer */
+        $writer = IOFactory::createWriter($phpWord, 'HTML');
+
+        return response($writer->getContent(), 200)->header('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    public function word(Request $request, Test $test)
+    {
+        abort_if(
+            $request->user()->cannot('view', $test),
+            404
+        );
+
+        $questions = $this->loadQuestions($test);
+        $layout = (new LayoutAdvisorService)->recommend($test, $questions);
+        $phpWord = (new TestWordGenerator)->generate($test, $questions, $layout);
+
+        $safeTitle = preg_replace('/[\/\\\:*?"<>|]/', '_', $test->title);
+        $filename = $safeTitle.'.docx';
+        $tempBase = tempnam(sys_get_temp_dir(), 'word');
+        $tempPath = $tempBase.'.docx';
+        @unlink($tempBase);
+
+        $writer = IOFactory::createWriter($phpWord, 'Word2007');
+
+        try {
+            $writer->save($tempPath);
+            return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
+        } catch (\Throwable $e) {
+            @unlink($tempPath);
+            throw $e;
+        }
+    }
+
+    private function loadQuestions(Test $test): \Illuminate\Support\Collection
+    {
+        return $test->questions()->orderBy('sort_order')->with('questionChoices')->get();
     }
 }

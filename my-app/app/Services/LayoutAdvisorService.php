@@ -34,11 +34,10 @@ columnsは1または2、question_spacingはnarrow/normal/wide、choice_layoutは
 EOT;
 
         $response = Http::timeout(10)->withHeaders([
-            'x-api-key' => config('services.anthropic.key'),
-            'anthropic-version' => '2023-06-01',
-            'content-type' => 'application/json',
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model' => 'claude-haiku-4-5-20251001',
+            'Authorization' => 'Bearer ' . config('services.openai.key'),
+            'Content-Type' => 'application/json',
+        ])->post('https://api.openai.com/v1/chat/completions', [
+            'model' => 'gpt-4o-mini',
             'max_tokens' => 256,
             'messages' => [
                 ['role' => 'user', 'content' => $prompt],
@@ -49,7 +48,7 @@ EOT;
             return $this->defaultLayout();
         }
 
-        $text = $response->json('content.0.text', '');
+        $text = $response->json('choices.0.message.content', '');
         $text = preg_replace('/^```(?:json)?\s*/m', '', $text);
         $text = preg_replace('/\s*```$/m', '', $text);
         $layout = json_decode(trim($text), true);

@@ -9,18 +9,26 @@ use PhpOffice\PhpWord\SimpleType\Jc;
 
 class TestWordGenerator
 {
+    public const VALID_SECTIONS = ['exam', 'answer_sheet', 'answer_key'];
+
     private array $layout;
 
-    public function generate(Test $test, Collection $questions, array $layout): PhpWord
+    public function generate(Test $test, Collection $questions, array $layout, string $section = 'all'): PhpWord
     {
         $this->layout = $layout;
         $phpWord = new PhpWord;
         $phpWord->setDefaultFontName('MS明朝');
         $phpWord->setDefaultFontSize(12);
 
-        $this->addExamSection($phpWord, $test, $questions);
-        $this->addAnswerSheetSection($phpWord, $test, $questions);
-        $this->addAnswerKeySection($phpWord, $test, $questions);
+        if ($section === 'exam' || $section === 'all') {
+            $this->addExamSection($phpWord, $test, $questions);
+        }
+        if ($section === 'answer_sheet' || $section === 'all') {
+            $this->addAnswerSheetSection($phpWord, $test, $questions);
+        }
+        if ($section === 'answer_key' || $section === 'all') {
+            $this->addAnswerKeySection($phpWord, $test, $questions);
+        }
 
         return $phpWord;
     }
@@ -93,7 +101,7 @@ class TestWordGenerator
                 $correct = $question->questionChoices->firstWhere('is_correct', true);
                 $answer = $correct ? $correct->choice_text : '（正解なし）';
             } else {
-                $answer = $question->answer_text ?? '（解答未設定）';
+                $answer = $question->correct_answer ?? '（解答未設定）';
             }
 
             $section->addText(
