@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('tests', TestController::class);
 
+    Route::get('tests/{test}/word', [TestController::class, 'word'])->name('tests.word');
+    Route::get('tests/{test}/word/preview', [TestController::class, 'wordPreview'])->name('tests.word.preview');
+    Route::get('tests/{test}/word/image', [TestController::class, 'wordImage'])->name('tests.word.image');
     Route::get('tests/{test}/questions/generate', [QuestionController::class, 'showGenerate'])->name('tests.questions.generate.form');
     Route::post('tests/{test}/questions/generate', [QuestionController::class, 'generate'])->name('tests.questions.generate');
     Route::patch('tests/{test}/questions/reorder', [QuestionController::class, 'reorder'])->name('tests.questions.reorder');
