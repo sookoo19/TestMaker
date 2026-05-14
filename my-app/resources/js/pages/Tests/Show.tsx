@@ -2,7 +2,6 @@ import { showGenerate } from '@/actions/App/Http/Controllers/QuestionController'
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { destroy, edit, index as testsIndex } from '@/routes/tests';
-import { preview as wordPreview } from '@/routes/tests/word';
 import { index as questionsIndex } from '@/routes/tests/questions';
 import { type BreadcrumbItem, type Question, type Test } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -25,10 +24,10 @@ export default function Show({ test }: Props) {
                     <h1 className='text-2xl font-bold'>{test.title}</h1>
                     <div className='flex gap-2'>
                         <Link
-                            href={wordPreview(test).url}
+                            href={`/tests/${test.id}/excel/preview`}
                             className='inline-flex items-center rounded-md border px-4 py-2 text-sm hover:bg-muted'
                         >
-                            Word出力
+                            Excel出力
                         </Link>
                         <Link
                             href={edit(test).url}

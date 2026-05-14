@@ -7,10 +7,10 @@ use App\Http\Requests\UpdateTestRequest;
 use App\Http\Resources\TestResource;
 use App\Models\Test;
 use App\Services\LayoutAdvisorService;
-use App\Services\TestWordGenerator;
+use App\Services\TestExcelGenerator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TestController extends Controller
 {
@@ -97,7 +97,7 @@ class TestController extends Controller
         return redirect()->route('tests.index');
     }
 
-    public function wordPreview(Request $request, Test $test)
+    public function excelPreview(Request $request, Test $test)
     {
         abort_if(
             $request->user()->cannot('view', $test),
@@ -107,13 +107,13 @@ class TestController extends Controller
         $questions = $this->loadQuestions($test);
         $layout = (new LayoutAdvisorService)->recommend($test, $questions);
 
-        return Inertia::render('Tests/WordPreview', [
+        return Inertia::render('Tests/ExcelPreview', [
             'test' => new TestResource($test),
             'layout' => $layout,
         ]);
     }
 
-    public function wordImage(Request $request, Test $test)
+    public function excelImage(Request $request, Test $test)
     {
         abort_if(
             $request->user()->cannot('view', $test),
@@ -123,18 +123,21 @@ class TestController extends Controller
         $questions = $this->loadQuestions($test);
         $layout = (new LayoutAdvisorService)->recommend($test, $questions);
 
-        $section = in_array($request->query('section'), TestWordGenerator::VALID_SECTIONS)
+        $section = in_array($request->query('section'), TestExcelGenerator::VALID_SECTIONS)
             ? $request->query('section')
             : 'exam';
-        $phpWord = (new TestWordGenerator)->generate($test, $questions, $layout, $section);
+        $spreadsheet = (new TestExcelGenerator)->generate($test, $questions, $layout, $section);
 
-        /** @var \PhpOffice\PhpWord\Writer\HTML $writer */
-        $writer = IOFactory::createWriter($phpWord, 'HTML');
+        /** @var \PhpOffice\PhpSpreadsheet\Writer\Html $writer */
+        $writer = IOFactory::createWriter($spreadsheet, 'Html');
+        ob_start();
+        $writer->save('php://output');
+        $html = (string) ob_get_clean();
 
-        return response($writer->getContent(), 200)->header('Content-Type', 'text/html; charset=utf-8');
+        return response($html, 200)->header('Content-Type', 'text/html; charset=utf-8');
     }
 
-    public function word(Request $request, Test $test)
+    public function excel(Request $request, Test $test)
     {
         abort_if(
             $request->user()->cannot('view', $test),
@@ -143,18 +146,19 @@ class TestController extends Controller
 
         $questions = $this->loadQuestions($test);
         $layout = (new LayoutAdvisorService)->recommend($test, $questions);
-        $phpWord = (new TestWordGenerator)->generate($test, $questions, $layout);
+        $spreadsheet = (new TestExcelGenerator)->generate($test, $questions, $layout);
 
         $safeTitle = preg_replace('/[\/\\\:*?"<>|]/', '_', $test->title);
-        $filename = $safeTitle.'.docx';
-        $tempBase = tempnam(sys_get_temp_dir(), 'word');
-        $tempPath = $tempBase.'.docx';
+        $filename = $safeTitle.'.xlsx';
+        $tempBase = tempnam(sys_get_temp_dir(), 'excel');
+        $tempPath = $tempBase.'.xlsx';
         @unlink($tempBase);
 
-        $writer = IOFactory::createWriter($phpWord, 'Word2007');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 
         try {
             $writer->save($tempPath);
+
             return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             @unlink($tempPath);
