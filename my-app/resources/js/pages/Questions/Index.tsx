@@ -1,6 +1,7 @@
 import { reorder } from '@/actions/App/Http/Controllers/QuestionController';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { questionTypeLabel } from '@/lib/question-type';
 import { show } from '@/routes/questions';
 import { show as testShow, index as testsIndex } from '@/routes/tests';
 import { create } from '@/routes/tests/questions';
@@ -68,7 +69,7 @@ function SortableItem({
                         Q{index + 1}. {question.question_text}
                     </Link>
                     <p className='mt-1 text-muted-foreground'>
-                        {question.question_type}・難易度:{' '}
+                        {questionTypeLabel(question.question_type)}・難易度:{' '}
                         {question.difficulty ?? '—'}
                     </p>
                 </div>

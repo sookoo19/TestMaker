@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { QUESTION_TYPES, QUESTION_TYPE_LABELS } from '@/lib/question-type';
 import { show as questionShow, update } from '@/routes/questions';
 import { destroy as destroyChoice, update as updateChoice } from '@/routes/question_choices';
 import { store as storeChoice } from '@/routes/questions/question_choices';
@@ -50,10 +51,11 @@ export default function Edit({ question, choices }: Props) {
                                     defaultValue={question.question_type}
                                     className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
                                 >
-                                    <option value='descriptive'>記述式</option>
-                                    <option value='choice'>選択式</option>
-                                    <option value='fill_blank'>穴埋め</option>
-                                    <option value='ordering'>並び替え</option>
+                                    {QUESTION_TYPES.map((t) => (
+                                        <option key={t} value={t}>
+                                            {QUESTION_TYPE_LABELS[t]}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.question_type && (
                                     <p className='mt-1 text-sm text-destructive'>

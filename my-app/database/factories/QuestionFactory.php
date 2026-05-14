@@ -18,7 +18,7 @@ class QuestionFactory extends Factory
     public function definition(): array
     {
         return [
-            'question_type' => fake()->randomElement(['descriptive', 'choice', 'fill_blank', 'ordering']),
+            'question_type' => fake()->randomElement(['descriptive', 'choice', 'fill_blank', 'ordering', 'true_false', 'multiple_choice', 'matching', 'essay']),
             'question_text' => fake()->sentence().'?',
             'correct_answer' => fake()->sentence(),
             'explanation' => fake()->optional()->paragraph(),

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { questionTypeLabel } from '@/lib/question-type';
 import { destroy, edit } from '@/routes/questions';
 import { show as testShow, index as testsIndex } from '@/routes/tests';
 import { index as questionsIndex } from '@/routes/tests/questions';
@@ -54,7 +55,7 @@ export default function Show({ question, choices }: Props) {
                 <dl className='space-y-2 text-sm'>
                     <div className='flex gap-2'>
                         <dt className='w-24 text-muted-foreground'>問題形式</dt>
-                        <dd>{question.question_type}</dd>
+                        <dd>{questionTypeLabel(question.question_type)}</dd>
                     </div>
                     <div className='flex gap-2'>
                         <dt className='w-24 text-muted-foreground'>難易度</dt>

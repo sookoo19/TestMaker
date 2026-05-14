@@ -181,6 +181,10 @@ class QuestionController extends Controller
             'choice' => '選択式（choicesに4つの選択肢、うち1つis_correct:true）',
             'fill_blank' => '穴埋め（question_textに___で空白、correct_answerに答え）',
             'ordering' => '並び替え（choicesに並び替え要素、correct_answerに正しい順序）',
+            'true_false' => '真偽式（question_textに命題、correct_answerに「○」または「×」）',
+            'multiple_choice' => '複数選択式（choicesに4〜6つの選択肢、複数のis_correct:true、correct_answerに正解記号を「ア,ウ」のようにカンマ区切り）',
+            'matching' => '組合せ式（question_textに左右リストを記載、correct_answerに「1-ア,2-イ」のように対応関係をカンマ区切り）',
+            'essay' => '論述式（question_textに論題、correct_answerに数行〜段落の模範論述）',
         };
 
         // AIに渡す指示書（どんなJSONを返すか定義）
@@ -309,7 +313,7 @@ class QuestionController extends Controller
         abort_if($request->user()->cannot('view', $test), 404);
 
         $validated = $request->validate([
-            'ids'   => ['required', 'array'],
+            'ids' => ['required', 'array'],
             'ids.*' => ['integer', 'exists:questions,id'],
         ]);
         $ids = $validated['ids'];

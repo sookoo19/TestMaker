@@ -17,7 +17,7 @@ class BatchStoreQuestionsRequest extends FormRequest
             'questions' => ['required', 'array',
                 'min:1', 'max:10'],
             'questions.*.question_type' => ['required',
-                'in:descriptive,choice,fill_blank,ordering'],
+                'in:descriptive,choice,fill_blank,ordering,true_false,multiple_choice,matching,essay'],
             'questions.*.question_text' => ['required', 'string'],
             'questions.*.correct_answer' => ['required', 'string'],
             'questions.*.explanation' => ['nullable', 'string'],

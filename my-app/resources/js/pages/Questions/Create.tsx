@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { QUESTION_TYPES, QUESTION_TYPE_LABELS } from '@/lib/question-type';
 import { show as testShow } from '@/routes/tests';
 import { index as questionsIndex, store } from '@/routes/tests/questions';
 import { type BreadcrumbItem, type Test } from '@/types';
@@ -94,10 +95,11 @@ export default function Create({ test }: Props) {
                             <option value='' disabled>
                                 選択してください
                             </option>
-                            <option value='descriptive'>記述式</option>
-                            <option value='choice'>選択式</option>
-                            <option value='fill_blank'>穴埋め</option>
-                            <option value='ordering'>並び替え</option>
+                            {QUESTION_TYPES.map((t) => (
+                                <option key={t} value={t}>
+                                    {QUESTION_TYPE_LABELS[t]}
+                                </option>
+                            ))}
                         </select>
                         {errors.question_type && (
                             <p className='mt-1 text-sm text-destructive'>

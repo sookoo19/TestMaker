@@ -22,7 +22,7 @@ class StoreQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'question_type' => ['required', 'in:descriptive,choice,fill_blank,ordering'],
+            'question_type' => ['required', 'in:descriptive,choice,fill_blank,ordering,true_false,multiple_choice,matching,essay'],
             'question_text' => ['required', 'string'],
             'correct_answer' => ['required', 'string'],
             'explanation' => ['nullable', 'string'],
