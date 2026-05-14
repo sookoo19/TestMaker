@@ -204,13 +204,20 @@ class QuestionController extends Controller
         - choices: 選択式・並び替えの場合のみ配列。各要素は {"choice_text": "...", "is_correct": true/false}
         EOT;
 
+        // 問題作成ガイドラインを system プロンプトとして読み込む
+        $guidelines = file_get_contents(resource_path('prompts/question-guidelines.md'));
+        $systemMessage = ['role' => 'system', 'content' => $guidelines];
+
         // テキストモードと画像モードでOpenAIへ渡すメッセージ形式が異なる
         if ($validated['input_type'] === 'text') {
             // テキストモード: テーマ文字列 + 指示書をそのまま送る
-            $messages = [[
-                'role' => 'user',
-                'content' => "テーマ: {$validated['topic']}\n\n{$instructionText}",
-            ]];
+            $messages = [
+                $systemMessage,
+                [
+                    'role' => 'user',
+                    'content' => "テーマ: {$validated['topic']}\n\n{$instructionText}",
+                ],
+            ];
         } else {
             // 画像モード: 画像をbase64に変換してOpenAIに送る
             $contentParts = [];
@@ -230,7 +237,10 @@ class QuestionController extends Controller
             // 画像の後ろに指示書テキストを追加
             $contentParts[] = ['type' => 'text', 'text' => "この教科書の内容から\n\n{$instructionText}"];
 
-            $messages = [['role' => 'user', 'content' => $contentParts]];
+            $messages = [
+                $systemMessage,
+                ['role' => 'user', 'content' => $contentParts],
+            ];
         }
 
         // OpenAI APIを呼び出す
